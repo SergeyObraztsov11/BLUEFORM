@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -
 WORKDIR /app/client
 COPY client/package.json client/package-lock.json ./
 RUN npm ci --no-audit --no-fund
+RUN sha256sum package-lock.json | cut -d ' ' -f 1 > node_modules/.blueform-lock-hash
 
 COPY . /app
 

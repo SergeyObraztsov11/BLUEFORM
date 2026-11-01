@@ -33,7 +33,7 @@ services:
       context: .
       dockerfile: client/Dockerfile
     working_dir: /app/client
-    command: sh -c "npx prisma migrate deploy && npx prisma generate --generator client && npm run dev -- --host 0.0.0.0 --port 3000"
+    command: sh -c "node scripts/ensure-deps.ts && npx prisma migrate deploy && npx prisma generate --generator client && npm run dev -- --host 0.0.0.0 --port 3000"
     ports:
       - "3000:3000"
     environment:

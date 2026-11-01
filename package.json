@@ -6,6 +6,21 @@
     "dev:client": "npm --prefix client run dev",
     "dev:server": "npm --prefix server run dev",
     "check:server": "npm --prefix server run check",
-    "test:contract": "npm --prefix server run test:contract"
+    "test:contract": "npm --prefix server run test:contract",
+    "format": "oxfmt --write .",
+    "format:check": "oxfmt --check .",
+    "lint:server": "eslint \"server/**/*.ts\" \"shared/**/*.ts\" \"prisma/**/*.ts\" --max-warnings=0",
+    "lint:client": "npm --prefix client run lint",
+    "lint": "npm run lint:server && npm run lint:client",
+    "lint:fix": "npm run lint:server -- --fix && npm --prefix client run lint:fix",
+    "typecheck": "npm --prefix server run check && npm --prefix client run typecheck",
+    "verify": "npm run format:check && npm run lint && npm run typecheck",
+    "check": "npm run verify"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.14.0",
+    "oxfmt": "^0.75.0",
+    "typescript-eslint": "^8.72.1"
   }
 }
