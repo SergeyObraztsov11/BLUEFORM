@@ -895,11 +895,15 @@ export const openApi = {
       },
       CreateOrder: {
         type: 'object',
-        required: ['firstName', 'phone', 'email'],
+        required: ['firstName', 'phone', 'email', 'deliveryCity', 'deliveryAddress', 'deliveryPostalCode'],
         properties: {
           firstName: { type: 'string', minLength: 1 },
           phone: { type: 'string', minLength: 1 },
           email: { type: 'string', format: 'email' },
+          deliveryCity: { type: 'string', minLength: 1, maxLength: 120 },
+          deliveryAddress: { type: 'string', minLength: 1, maxLength: 300 },
+          deliveryPostalCode: { type: 'string', pattern: '^\\d{6}$' },
+          deliveryComment: { type: 'string', maxLength: 1000 },
         },
       },
       CreatedOrder: {
@@ -954,6 +958,10 @@ export const openApi = {
           firstName: { type: 'string' },
           phone: { type: 'string' },
           total: { type: 'number' },
+          deliveryCity: { type: 'string', nullable: true },
+          deliveryAddress: { type: 'string', nullable: true },
+          deliveryPostalCode: { type: 'string', nullable: true },
+          deliveryComment: { type: 'string', nullable: true },
           quantity: { type: 'integer' },
           createdAt: { type: 'string', format: 'date-time' },
           lines: {

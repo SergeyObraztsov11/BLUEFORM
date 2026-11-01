@@ -9,6 +9,10 @@ const account = useAccountStore();
 const firstName = ref('');
 const phone = ref('');
 const email = ref('');
+const deliveryCity = ref('');
+const deliveryAddress = ref('');
+const deliveryPostalCode = ref('');
+const deliveryComment = ref('');
 const error = ref<string | null>(null);
 const submitting = ref(false);
 const orderId = ref<string | null>(null);
@@ -44,12 +48,21 @@ watch(
 );
 
 async function submitOrder() {
+  if (submitting.value) return;
   error.value = null;
   submitting.value = true;
   try {
     const order = await $fetch<{ id: string }>('/api/orders', {
       method: 'POST',
-      body: { firstName: firstName.value, phone: phone.value, email: email.value },
+      body: {
+        firstName: firstName.value,
+        phone: phone.value,
+        email: email.value,
+        deliveryCity: deliveryCity.value,
+        deliveryAddress: deliveryAddress.value,
+        deliveryPostalCode: deliveryPostalCode.value,
+        deliveryComment: deliveryComment.value,
+      },
     });
     orderId.value = order.id;
     await cart.load();
@@ -73,7 +86,7 @@ useHead({ title: 'Оформление заказа — BLUEFORM', meta: [{ name
         <h2 class="text-2xl font-bold text-ink">{{ orderId ? 'Заказ создан' : 'Данные для оформления' }}</h2>
         <p v-if="orderId" class="mt-5 max-w-[640px] text-sm leading-6 text-ink/70">
           Номер заказа <span class="font-semibold text-ink">{{ orderId }}</span
-          >. Оплата и доставка появятся позже, состав заказа уже сохранён.
+          >. Заказ сохранён. Оплата условная: деньги не списаны. Способ доставки уточняется вручную.
         </p>
         <div v-else-if="!account.isAuthenticated" class="mt-7 max-w-[640px]">
           <p class="text-sm leading-6 text-ink/70">
@@ -114,6 +127,55 @@ useHead({ title: 'Оформление заказа — BLUEFORM', meta: [{ name
               placeholder="mail@example.ru"
               class="h-12 border border-seam bg-white px-4 font-normal outline-none focus:border-cobalt"
           /></label>
+          <p class="text-sm leading-6 text-ink/70 sm:col-span-2">
+            Доставка по России бесплатная. Способ доставки уточняется вручную.
+          </p>
+          <label class="flex flex-col gap-2 text-sm font-semibold text-ink"
+            >Город
+            <input
+              v-model.trim="deliveryCity"
+              required
+              maxlength="120"
+              autocomplete="address-level2"
+              class="h-12 border border-seam bg-white px-4 font-normal outline-none focus:border-cobalt"
+            />
+          </label>
+          <label class="flex flex-col gap-2 text-sm font-semibold text-ink"
+            >Индекс
+            <input
+              v-model.trim="deliveryPostalCode"
+              required
+              pattern="[0-9]{6}"
+              maxlength="6"
+              inputmode="numeric"
+              autocomplete="postal-code"
+              placeholder="6 цифр"
+              class="h-12 border border-seam bg-white px-4 font-normal outline-none focus:border-cobalt"
+            />
+          </label>
+          <label class="flex flex-col gap-2 text-sm font-semibold text-ink sm:col-span-2"
+            >Адрес доставки
+            <input
+              v-model.trim="deliveryAddress"
+              required
+              maxlength="300"
+              autocomplete="street-address"
+              placeholder="Улица, дом, квартира"
+              class="h-12 border border-seam bg-white px-4 font-normal outline-none focus:border-cobalt"
+            />
+          </label>
+          <label class="flex flex-col gap-2 text-sm font-semibold text-ink sm:col-span-2"
+            >Комментарий к доставке
+            <textarea
+              v-model.trim="deliveryComment"
+              maxlength="1000"
+              rows="3"
+              class="border border-seam bg-white p-4 font-normal outline-none focus:border-cobalt"
+            />
+          </label>
+          <p class="text-sm leading-6 text-ink/70 sm:col-span-2">
+            Оплата условная: деньги при оформлении не списываются.
+          </p>
           <p v-if="error" class="text-sm text-error sm:col-span-2" role="alert">{{ error }}</p>
           <p v-if="cart.hasStockIssues" class="text-sm text-error sm:col-span-2" role="alert">
             Вернитесь в корзину и проверьте наличие и количество товаров.
@@ -146,6 +208,9 @@ useHead({ title: 'Оформление заказа — BLUEFORM', meta: [{ name
             В корзине нет товаров для оформления.
           </li>
         </ul>
+        <div class="mt-5 flex justify-between gap-4 text-sm text-ink/70">
+          <span>Доставка</span><span>Бесплатно · 0 ₽</span>
+        </div>
         <div class="mt-5 flex items-baseline justify-between gap-4 text-lg font-bold text-ink">
           <span>Итого</span><span>{{ cart.total.toLocaleString('ru-RU') }} ₽</span>
         </div>

@@ -24,6 +24,13 @@ export const orderBody = z.object({
   firstName: z.string().trim().min(1, 'Укажите имя.').max(80),
   phone: z.string().trim().min(5, 'Укажите телефон.').max(32),
   email: z.email('Укажите почту.'),
+  deliveryCity: z.string().trim().min(1, 'Укажите город.').max(120),
+  deliveryAddress: z.string().trim().min(1, 'Укажите адрес доставки.').max(300),
+  deliveryPostalCode: z
+    .string()
+    .trim()
+    .regex(/^\d{6}$/, 'Укажите шестизначный индекс.'),
+  deliveryComment: z.string().trim().max(1000).optional().default(''),
 });
 
 const messages: Record<string, ShopErrorCode> = {
