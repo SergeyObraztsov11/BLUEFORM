@@ -9,10 +9,10 @@
   "scripts": {
     "dev": "npm run db:generate && tsx watch src/server.ts",
     "build": "npm run db:generate && tsc",
-    "start": "node dist/api/src/server.js",
-    "check": "npm run db:generate && tsc --noEmit",
+    "start": "node dist/server/src/server.js",
+    "check": "npm run db:generate && tsc --noEmit && tsc -p tsconfig.test.json",
     "db:generate": "prisma generate --schema ../prisma/schema.prisma --generator apiClient",
-    "test:contract": "node --test tests/contracts.test.mjs"
+    "test:contract": "tsx --test tests/contracts.test.ts"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^9.1.0",

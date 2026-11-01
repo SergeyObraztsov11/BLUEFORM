@@ -2,6 +2,7 @@ import express from 'express'
 import { apiReference } from '@scalar/express-api-reference'
 import { extendZodWithOpenApi, OpenApiGeneratorV31 } from '@asteasolutions/zod-to-openapi'
 import { z } from 'zod'
+import { errorHandler } from './middleware/error-handler.js'
 
 extendZodWithOpenApi(z)
 
@@ -28,5 +29,6 @@ export async function createApp() {
   }))
   app.use(express.json({ limit: '16kb' }))
   for (const module of modules) app.use(module.router)
+  app.use(errorHandler)
   return app
 }

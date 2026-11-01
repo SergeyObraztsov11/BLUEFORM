@@ -9,8 +9,11 @@ dist
 # Node dependencies
 node_modules
 .npm-cache
+client/server/generated/prisma
 server/generated/prisma
-api/src/generated/prisma
+server/src/generated/prisma
+# Остатки сгенерированного окружения прежнего расположения API
+/api/
 
 # Logs
 logs

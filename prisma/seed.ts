@@ -1,8 +1,8 @@
 import { readFile } from 'node:fs/promises'
 import { PrismaPg } from '@prisma/adapter-pg'
-import { PrismaClient } from '../server/generated/prisma/client'
-import { fabrics, russianSizes } from '../app/data/catalog-options'
-import { catalogCategories } from '../app/data/catalog-categories'
+import { PrismaClient } from '../client/server/generated/prisma/client'
+import { fabrics, russianSizes } from '../client/app/data/catalog-options'
+import { catalogCategories } from '../client/app/data/catalog-categories'
 
 type TestProduct = {
   id: string
@@ -22,7 +22,7 @@ const connectionString = process.env.DATABASE_URL
 if (!connectionString) throw new Error('DATABASE_URL is required to seed the catalog')
 
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) })
-const products = JSON.parse(await readFile(new URL('../app/data/catalog-test.json', import.meta.url), 'utf8')) as TestProduct[]
+const products = JSON.parse(await readFile(new URL('../client/app/data/catalog-test.json', import.meta.url), 'utf8')) as TestProduct[]
 
 try {
   const sizeSystem = await prisma.sizeSystem.upsert({

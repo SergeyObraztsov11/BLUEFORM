@@ -1,7 +1,7 @@
 node_modules
 **/node_modules
-api/src/generated
-api/dist
+server/src/generated
+server/dist
 .npm-cache
 .nuxt
 .output

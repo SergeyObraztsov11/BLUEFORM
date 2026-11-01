@@ -1,75 +1,39 @@
-# Nuxt Minimal Starter
+﻿# BLUEFORM
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Интернет-магазин на Nuxt и TypeScript с отдельным Express API. Переход на Express выполняется постепенно: действующие маршруты магазина пока работают в `client/server`.
 
-## Setup
+## Структура
 
-Make sure to install dependencies:
+- `client/` — Nuxt, интерфейс магазина и временный сервер Nitro.
+- `server/` — самостоятельный Express API на TypeScript.
+- `shared/` — определения, необходимые обоим приложениям на время переноса.
+- `prisma/` — общая схема и единственный набор миграций.
+- `docs/API-ARCHITECTURE.md` — ответственность приложений и план миграции.
+- `docs/MVP-PLAN.md` — функциональный план MVP.
 
-```bash
-# npm
-npm install
+## Локальный запуск
 
-# pnpm
-pnpm install
+Создайте `.env` в корне на основе `.env.example` и заполните локальные значения. Нужен Docker с Compose.
 
-# yarn
-yarn install
-
-# bun
-bun install
+```sh
+docker compose --profile new-api up -d --build
 ```
 
-## Development Server
+- Магазин: http://localhost:3000
+- Express API: http://localhost:3001/api/health
+- Документация Express: http://localhost:3001/docs
+- Проверка базы: http://localhost:3001/api/ready
+- Локальные письма: http://localhost:8025
 
-Start the development server on `http://localhost:3000`:
+Scalar загружает браузерный скрипт с CDN и требует доступа к интернету. Проверка `health` не проверяет базу; для этого используйте `ready`.
 
-```bash
-# npm
-npm run dev
+## Проверки
 
-# pnpm
-pnpm dev
+Для проверок нужен Node.js 24 или новее. Установите зависимости сервера командой `npm --prefix server ci`, затем при запущенных сервисах выполните:
 
-# yarn
-yarn dev
-
-# bun
-bun run dev
+```sh
+npm run check:server
+npm run test:contract
 ```
 
-## Production
-
-Build the application for production:
-
-```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+Команды `npm run dev:client` и `npm run dev:server` запускают соответствующее приложение локально. Вне Docker нужно отдельно обеспечить доступ к PostgreSQL и передать необходимые переменные окружения.
