@@ -39,6 +39,12 @@ test('current shop rejects anonymous order access and invalid catalogue input', 
   assert.equal(invalidPage.code, 'CATALOG_INVALID_PAGE')
 })
 
+test('checkout prompts a guest to sign in', async () => {
+  const response = await fetch(`${shop}/checkout`)
+  assert.equal(response.status, 200)
+  assert.match(await response.text(), /Чтобы оформить заказ, войдите или зарегистрируйтесь/)
+})
+
 test('Express is available, connected to the database and documents its routes', async () => {
   const [health, ready, openapi] = await Promise.all([
     getJson<{ status: string }>(`${api}/api/health`),

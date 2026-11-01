@@ -1,14 +1,14 @@
 import { ownerWhere } from '../../utils/cart'
-import { ownerForRead } from '../../utils/guest'
+import { currentUserId } from '../../utils/guest'
 import { apiError } from '../../utils/http'
 import { prisma } from '../../utils/prisma'
 import { orderBody, parseBody } from '../../utils/validation'
 
 export default defineEventHandler(async (event) => {
+  const userId = await currentUserId(event)
+  if (!userId) apiError('SESSION_REQUIRED')
   const body = parseBody(orderBody, await readBody(event))
-  const owner = await ownerForRead(event)
-  if (!owner) apiError('ORDER_NO_CART')
-  const userId = 'userId' in owner ? owner.userId : null
+  const owner = { userId }
 
   const order = await prisma.$transaction(async (tx) => {
     const cart = await tx.cart.findUnique({
@@ -60,13 +60,11 @@ export default defineEventHandler(async (event) => {
     })
 
     await tx.cartItem.deleteMany({ where: { id: { in: items.map(item => item.id) } } })
-    if (userId) {
-      await tx.customerProfile.upsert({
-        where: { userId },
-        create: { userId, firstName: body.firstName, phone: body.phone },
-        update: { firstName: body.firstName, phone: body.phone },
-      })
-    }
+    await tx.customerProfile.upsert({
+      where: { userId },
+      create: { userId, firstName: body.firstName, phone: body.phone },
+      update: { firstName: body.firstName, phone: body.phone },
+    })
     return created
   })
 

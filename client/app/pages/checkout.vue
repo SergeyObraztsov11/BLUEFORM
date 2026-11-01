@@ -12,6 +12,16 @@ const email = ref('')
 const error = ref<string | null>(null)
 const submitting = ref(false)
 const orderId = ref<string | null>(null)
+const authMode = ref<'login' | 'register' | null>(null)
+const authVisible = ref(false)
+
+function openAuth(mode: 'login' | 'register') {
+  authMode.value = mode
+  authVisible.value = true
+}
+
+function closeAuth() { authVisible.value = false }
+function finishAuthClose() { if (!authVisible.value) authMode.value = null }
 
 watch(() => account.profile, (profile) => {
   if (!profile) {
@@ -54,6 +64,13 @@ useHead({ title: 'Оформление заказа — BLUEFORM', meta: [{ name
       <div class="min-w-0 border-t border-seam pt-7">
         <h2 class="text-2xl font-bold text-ink">{{ orderId ? 'Заказ создан' : 'Данные для оформления' }}</h2>
         <p v-if="orderId" class="mt-5 max-w-[640px] text-sm leading-6 text-ink/70">Номер заказа <span class="font-semibold text-ink">{{ orderId }}</span>. Оплата и доставка появятся позже, состав заказа уже сохранён.</p>
+        <div v-else-if="!account.isAuthenticated" class="mt-7 max-w-[640px]">
+          <p class="text-sm leading-6 text-ink/70">Чтобы оформить заказ, войдите или зарегистрируйтесь. Товары в корзине сохранятся.</p>
+          <div class="mt-6 flex flex-wrap gap-3">
+            <button type="button" class="shop-button-primary" @click="openAuth('login')">ВОЙТИ</button>
+            <button type="button" class="shop-button-primary" @click="openAuth('register')">РЕГИСТРАЦИЯ</button>
+          </div>
+        </div>
         <form v-else class="mt-7 grid gap-5 sm:grid-cols-2" @submit.prevent="submitOrder">
           <label class="flex flex-col gap-2 text-sm font-semibold text-ink">Имя<input v-model.trim="firstName" type="text" autocomplete="given-name" required placeholder="Как к вам обращаться" class="h-12 border border-seam bg-white px-4 font-normal outline-none focus:border-cobalt"></label>
           <label class="flex flex-col gap-2 text-sm font-semibold text-ink">Телефон<input v-model.trim="phone" type="tel" autocomplete="tel" required placeholder="+7" class="h-12 border border-seam bg-white px-4 font-normal outline-none focus:border-cobalt"></label>
@@ -79,5 +96,6 @@ useHead({ title: 'Оформление заказа — BLUEFORM', meta: [{ name
         <div class="mt-5 flex items-baseline justify-between gap-4 text-lg font-bold text-ink"><span>Итого</span><span>{{ cart.total.toLocaleString('ru-RU') }} ₽</span></div>
       </aside>
     </div>
+    <AuthModal v-if="authMode" :mode="authMode" :visible="authVisible" @close="closeAuth" @after-leave="finishAuthClose" @switch="authMode = $event" @success="closeAuth" />
   </section>
 </template>

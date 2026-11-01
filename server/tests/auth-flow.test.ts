@@ -95,6 +95,11 @@ test('authentication, session compatibility and guest cart merge', { timeout: 60
     const guestCookie = guestAdd.headers.getSetCookie().map(value => value.split(';', 1)[0]).find(value => value?.startsWith('bf_guest='))
     assert.ok(guestCookie, 'guest cart should issue a cookie')
     guestTokenHash = createHash('sha256').update(guestCookie.slice('bf_guest='.length)).digest('hex')
+    const guestOrder = await request('/api/orders', { firstName: 'Test', phone: '123456789', email }, guestCookie)
+    assert.equal(guestOrder.status, 401, 'guest cannot create an order')
+    assert.equal((await guestOrder.json() as { code: string }).code, 'SESSION_REQUIRED')
+    const guestCart = await fetch(`${shop}/api/cart`, { headers: { cookie: guestCookie } })
+    assert.equal((await guestCart.json() as { items: unknown[] }).items.length, 1, 'guest cart should be preserved')
     const combinedCookie = `${cookie}; ${guestCookie}`
     const merges = await Promise.all([
       request('/api/session/adopt', {}, combinedCookie),
@@ -118,6 +123,9 @@ test('authentication, session compatibility and guest cart merge', { timeout: 60
       body: JSON.stringify({ quantity: 1 }),
     })
     assert.equal(reduce.status, 200, 'buyer should be able to reduce the merged quantity')
+    const successfulOrder = await request('/api/orders', { firstName: 'Test', phone: '123456789', email }, cookie)
+    assert.equal(successfulOrder.status, 200, 'signed-in buyer can order the corrected cart')
+    assert.equal(await prisma.order.count({ where: { userId: user.id } }), 1)
 
     const signout = await request('/api/auth/sign-out', {}, cookie)
     assert.equal(signout.status, 200, 'sign-out should succeed')
