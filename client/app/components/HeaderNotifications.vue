@@ -55,9 +55,7 @@ async function openItem(id: string, href: string | null) {
       <button
         type="button"
         class="relative flex size-10 items-center justify-center text-ink transition-colors hover:text-cobalt"
-        :aria-label="
-          unreadCount ? `Уведомления, ${unreadCount} непрочитанных` : 'Уведомления'
-        "
+        :aria-label="unreadCount ? `Уведомления, ${unreadCount} непрочитанных` : 'Уведомления'"
         title="Уведомления"
         v-bind="controls"
         @click="toggle"

@@ -139,7 +139,9 @@ onMounted(async () => {
         <div class="mt-3 flex justify-between gap-4 text-sm text-ink/70">
           <span>Доставка</span><span>Бесплатно · 0 ₽</span>
         </div>
-        <div class="mt-5 flex items-baseline justify-between gap-4 border-t border-ink/15 pt-5 text-lg font-bold text-ink">
+        <div
+          class="mt-5 flex items-baseline justify-between gap-4 border-t border-ink/15 pt-5 text-lg font-bold text-ink"
+        >
           <span>Сумма</span><span>{{ order.total.toLocaleString('ru-RU') }} ₽</span>
         </div>
         <p class="mt-4 text-xs leading-5 text-ink/55">

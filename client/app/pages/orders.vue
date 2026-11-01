@@ -58,10 +58,7 @@ onMounted(async () => {
 
     <ul v-else-if="items.length" class="mt-10 divide-y divide-seam border-y border-seam">
       <li v-for="order in items" :key="order.id">
-        <NuxtLink
-          :to="`/orders/${order.id}`"
-          class="block py-5 transition-colors hover:bg-ice/50 sm:py-6"
-        >
+        <NuxtLink :to="`/orders/${order.id}`" class="block py-5 transition-colors hover:bg-ice/50 sm:py-6">
           <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p class="type-label text-cobalt">ЗАКАЗ № {{ shortId(order.id) }}</p>
@@ -79,8 +76,7 @@ onMounted(async () => {
               :key="`${order.id}-${index}`"
               class="text-sm text-ink/70"
             >
-              {{ line.productName }} · {{ line.shade }} · размер {{ line.size }} ·
-              {{ line.quantity }} шт.
+              {{ line.productName }} · {{ line.shade }} · размер {{ line.size }} · {{ line.quantity }} шт.
             </li>
             <li v-if="order.lines.length > 3" class="text-sm text-ink/50">
               и ещё {{ order.lines.length - 3 }}

@@ -29,10 +29,7 @@ async function openItem(id: string, href: string | null) {
 
 <template>
   <section class="min-h-[70vh] pb-20 pt-5 md:pt-6">
-    <ShopPageBanner
-      title="УВЕДОМЛЕНИЯ"
-      lead="Заказы, регистрация и изменения статуса появятся здесь."
-    />
+    <ShopPageBanner title="УВЕДОМЛЕНИЯ" lead="Заказы, регистрация и изменения статуса появятся здесь." />
 
     <div class="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-seam pt-6">
       <p class="text-sm text-ink/65">

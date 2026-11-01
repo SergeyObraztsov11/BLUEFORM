@@ -140,9 +140,7 @@ useHead({ title: 'Оформление заказа — BLUEFORM', meta: [{ name
             Уведомление отправлено на почту и сохранено в кабинете.
           </p>
           <div class="mt-6 flex flex-wrap gap-3">
-            <NuxtLink :to="`/orders/${createdOrder.id}`" class="shop-button-primary"
-              >СМОТРЕТЬ ЗАКАЗ</NuxtLink
-            >
+            <NuxtLink :to="`/orders/${createdOrder.id}`" class="shop-button-primary">СМОТРЕТЬ ЗАКАЗ</NuxtLink>
             <NuxtLink
               to="/notifications"
               class="inline-flex h-12 items-center px-5 text-sm font-bold text-cobalt hover:text-ink"

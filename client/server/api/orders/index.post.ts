@@ -1,10 +1,7 @@
 import { ownerWhere } from '../../utils/cart';
 import { currentUserId } from '../../utils/guest';
 import { apiError } from '../../utils/http';
-import {
-  createOrderCreatedNotification,
-  notifyOrderCreatedByEmail,
-} from '../../utils/notifications';
+import { createOrderCreatedNotification, notifyOrderCreatedByEmail } from '../../utils/notifications';
 import { toOrderResponse } from '../../utils/orderResponse';
 import { prisma } from '../../utils/prisma';
 import { orderBody, parseBody } from '../../utils/validation';
