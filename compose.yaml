@@ -55,6 +55,7 @@ services:
       S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY}
       SMTP_HOST: mailpit
       SMTP_PORT: '1025'
+      OWNER_NOTIFY_EMAIL: ${OWNER_NOTIFY_EMAIL:-admin@blueform.local}
     volumes:
       - .:/app
       - web_node_modules:/app/client/node_modules

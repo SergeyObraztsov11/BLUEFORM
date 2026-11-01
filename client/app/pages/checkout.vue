@@ -36,6 +36,11 @@ const deliveryComment = ref('');
 const error = ref<string | null>(null);
 const submitting = ref(false);
 const createdOrder = ref<CreatedOrder | null>(null);
+const idempotencyKey = ref(
+  typeof crypto !== 'undefined' && 'randomUUID' in crypto
+    ? crypto.randomUUID()
+    : `order-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+);
 const authMode = ref<'login' | 'register' | null>(null);
 const authVisible = ref(false);
 
@@ -105,6 +110,8 @@ async function submitOrder() {
         deliveryAddress: deliveryAddress.value,
         deliveryPostalCode: deliveryPostalCode.value,
         deliveryComment: deliveryComment.value,
+        expectedTotal: cart.total,
+        idempotencyKey: idempotencyKey.value,
       },
     });
     createdOrder.value = order;
@@ -112,6 +119,7 @@ async function submitOrder() {
     if (account.isAuthenticated) await account.refresh();
   } catch (reason) {
     error.value = apiErrorMessage(reason);
+    await cart.load().catch(() => undefined);
   } finally {
     submitting.value = false;
   }
