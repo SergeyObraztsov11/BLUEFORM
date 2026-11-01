@@ -1,6 +1,11 @@
 import { ownerWhere } from '../../utils/cart';
 import { currentUserId } from '../../utils/guest';
 import { apiError } from '../../utils/http';
+import {
+  createOrderCreatedNotification,
+  notifyOrderCreatedByEmail,
+} from '../../utils/notifications';
+import { toOrderResponse } from '../../utils/orderResponse';
 import { prisma } from '../../utils/prisma';
 import { orderBody, parseBody } from '../../utils/validation';
 
@@ -62,7 +67,13 @@ export default defineEventHandler(async (event) => {
           })),
         },
       },
-      select: { id: true, totalKopecks: true, items: { select: { quantity: true } } },
+      include: { items: { orderBy: { id: 'asc' } } },
+    });
+
+    await createOrderCreatedNotification(tx, {
+      userId,
+      orderId: created.id,
+      totalRubles: created.totalKopecks / 100,
     });
 
     await tx.cartItem.deleteMany({ where: { id: { in: items.map((item) => item.id) } } });
@@ -74,9 +85,11 @@ export default defineEventHandler(async (event) => {
     return created;
   });
 
-  return {
-    id: order.id,
-    total: order.totalKopecks / 100,
-    quantity: order.items.reduce((sum, item) => sum + item.quantity, 0),
-  };
+  void notifyOrderCreatedByEmail({
+    email: order.email,
+    orderId: order.id,
+    totalRubles: order.totalKopecks / 100,
+  }).catch(() => undefined);
+
+  return toOrderResponse(order);
 });

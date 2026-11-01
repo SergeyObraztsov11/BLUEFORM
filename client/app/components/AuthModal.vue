@@ -6,6 +6,7 @@ import { apiErrorMessage } from '~/utils/apiError';
 import { useAccountStore } from '~/stores/account';
 import { useCartStore } from '~/stores/cart';
 import { useFavoritesStore } from '~/stores/favorites';
+import { useNotificationsStore } from '~/stores/notifications';
 
 type AuthMode = 'login' | 'register';
 type AuthError = { message?: string; code?: string; status?: number } | null;
@@ -15,6 +16,8 @@ const emit = defineEmits<{ close: []; switch: [mode: AuthMode]; 'after-leave': [
 const account = useAccountStore();
 const cart = useCartStore();
 const favorites = useFavoritesStore();
+const notifications = useNotificationsStore();
+const shouldWelcome = ref(false);
 
 const firstInput = ref<HTMLInputElement | null>(null);
 const codeInputs = useTemplateRef<HTMLInputElement[]>('codeInputs');
@@ -58,7 +61,11 @@ async function finishSignIn() {
     error.value = apiErrorMessage(reason);
     return;
   }
-  await Promise.all([cart.load(), favorites.load()]);
+  if (shouldWelcome.value) {
+    await notifications.ensureWelcome();
+    shouldWelcome.value = false;
+  }
+  await Promise.all([cart.load(), favorites.load(), notifications.load()]);
   emit('success');
 }
 
@@ -105,6 +112,7 @@ async function submitCode() {
       error.value = authMessage(result.error);
       return;
     }
+    shouldWelcome.value = true;
     await finishSignIn();
   } finally {
     submitting.value = false;
@@ -158,6 +166,7 @@ watch(
     password.value = '';
     error.value = null;
     code.value = ['', '', '', '', ''];
+    shouldWelcome.value = false;
     void nextTick(() => firstInput.value?.focus());
   },
 );

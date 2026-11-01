@@ -23,6 +23,7 @@ const shopErrors = {
     message: 'Недостаточно товара: {product}, {shade}, размер {size}.',
   },
   ORDER_NOT_FOUND: { status: 404, message: 'Заказ не найден.' },
+  NOTIFICATION_NOT_FOUND: { status: 404, message: 'Уведомление не найдено.' },
   SESSION_REQUIRED: { status: 401, message: 'Нужно войти в аккаунт.' },
   PROFILE_NOTHING_TO_UPDATE: { status: 400, message: 'Нечего обновлять.' },
   PROFILE_PHONE_INVALID: { status: 400, message: 'Укажите телефон.' },
