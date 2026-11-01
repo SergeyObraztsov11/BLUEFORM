@@ -7,10 +7,12 @@
     "node": ">=24"
   },
   "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "build": "tsc",
+    "dev": "npm run db:generate && tsx watch src/server.ts",
+    "build": "npm run db:generate && tsc",
     "start": "node dist/server.js",
-    "check": "tsc --noEmit"
+    "check": "npm run db:generate && tsc --noEmit",
+    "db:generate": "prisma generate --schema ../prisma/schema.prisma --generator apiClient",
+    "test:contract": "node --test tests/contracts.test.mjs"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^9.1.0",

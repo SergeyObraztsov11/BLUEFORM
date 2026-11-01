@@ -1,4 +1,7 @@
 node_modules
+**/node_modules
+api/src/generated
+api/dist
 .npm-cache
 .nuxt
 .output

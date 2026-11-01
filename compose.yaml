@@ -1,13 +1,20 @@
 services:
   api:
     profiles: ["new-api"]
-    build: ./api
+    build:
+      context: .
+      dockerfile: api/Dockerfile
     ports:
       - "127.0.0.1:3001:3001"
     environment:
       PORT: "3001"
+      DATABASE_URL: postgresql://blueform:${POSTGRES_PASSWORD}@db:5432/blueform?schema=public
     volumes:
-      - ./api/src:/app/src
+      - ./api/src:/app/api/src
+      - ./prisma/schema.prisma:/app/prisma/schema.prisma:ro
+    depends_on:
+      db:
+        condition: service_healthy
 
   web:
     build: .
