@@ -2,11 +2,11 @@
 
 ## Материалы
 
-- Референс: `docs/denim-reference.png`.
-- Первый экран: `docs/landing-preview.png`.
-- Блок BLUEFORM и манифест: `docs/landing-story-preview.png`.
-- Коллекция: `docs/landing-collection-preview.png`.
-- Правила бренда и сайта: `docs/BRAND.md`, `docs/WEBSITE-VISUAL.md`.
+- Референс: `docs/design/assets/denim-reference.png`.
+- Первый экран: `docs/design/assets/landing-preview.png`.
+- Блок BLUEFORM и манифест: `docs/design/assets/landing-story-preview.png`.
+- Коллекция: `docs/design/assets/landing-collection-preview.png`.
+- Правила бренда и сайта: `docs/design/BRAND.md`, `docs/design/WEBSITE-VISUAL.md`.
 
 ## Что изменено
 
