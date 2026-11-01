@@ -45,6 +45,12 @@ test('checkout prompts a guest to sign in', async () => {
   assert.match(await response.text(), /Чтобы оформить заказ, войдите или зарегистрируйтесь/)
 })
 
+test('catalogue pages render through Nuxt', async () => {
+  assert.equal((await fetch(`${shop}/catalog`)).status, 200)
+  const page = await getJson<{ items: { id: string }[] }>(`${shop}/api/catalog/products`)
+  if (page.items[0]) assert.equal((await fetch(`${shop}/product/${encodeURIComponent(page.items[0].id)}`)).status, 200)
+})
+
 test('Express is available, connected to the database and documents its routes', async () => {
   const [health, ready, openapi] = await Promise.all([
     getJson<{ status: string }>(`${api}/api/health`),
@@ -56,6 +62,8 @@ test('Express is available, connected to the database and documents its routes',
   assert.ok(openapi.paths['/api/health']?.get)
   assert.ok(openapi.paths['/api/ready']?.get)
   assert.ok(openapi.paths['/api/catalog/categories']?.get)
+  assert.ok(openapi.paths['/api/catalog/products']?.get)
+  assert.ok(openapi.paths['/api/catalog/products/{id}']?.get)
 })
 
 test('Express categories match the existing shop contract', async () => {
@@ -64,6 +72,43 @@ test('Express categories match the existing shop contract', async () => {
     getJson(`${api}/api/catalog/categories`),
   ])
   assert.deepEqual(migrated, current)
+})
+
+test('catalogue proxy preserves Express responses, filters and errors', async () => {
+  const queries = [
+    '', '?page=2', '?sort=price-asc', '?sort=price-desc', '?category=women-jeans&stock=1',
+    '?size=42&size=44', '?shade=Индиго', '?q=джинсы', '?fit=free', '?sale=1',
+    '?minPrice=1000&maxPrice=9000', '?page=0', '?sort=bad', '?minPrice=20&maxPrice=10',
+  ]
+  for (const query of queries) {
+    const [oldResponse, newResponse] = await Promise.all([
+      fetch(`${shop}/api/catalog/products${query}`),
+      fetch(`${api}/api/catalog/products${query}`),
+    ])
+    assert.equal(newResponse.status, oldResponse.status, `status differs for ${query}`)
+    assert.deepEqual(await newResponse.json(), await oldResponse.json(), `response differs for ${query}`)
+  }
+  const page = await getJson<{ items: { id: string }[] }>(`${shop}/api/catalog/products`)
+  const first = page.items[0]
+  if (first) {
+    assert.deepEqual(
+      await getJson(`${api}/api/catalog/products/${encodeURIComponent(first.id)}`),
+      await getJson(`${shop}/api/catalog/products/${encodeURIComponent(first.id)}`),
+    )
+  }
+  const [oldMissing, newMissing] = await Promise.all([
+    fetch(`${shop}/api/catalog/products/not-a-real-product`),
+    fetch(`${api}/api/catalog/products/not-a-real-product`),
+  ])
+  assert.equal(newMissing.status, oldMissing.status)
+  const missingBody = await newMissing.json() as { code: string }
+  assert.equal(newMissing.status, 404)
+  assert.equal(missingBody.code, 'PRODUCT_NOT_FOUND')
+  assert.deepEqual(missingBody, await oldMissing.json())
+  const invalidPage = await getJson<{ code: string }>(`${shop}/api/catalog/products?page=0`, 400)
+  assert.equal(invalidPage.code, 'CATALOG_INVALID_PAGE')
+  const sorted = await getJson<{ items: { price: number }[] }>(`${shop}/api/catalog/products?sort=price-asc`)
+  assert.ok(sorted.items.every((item, index) => index === 0 || item.price >= sorted.items[index - 1]!.price))
 })
 
 test('Express returns a safe JSON error for malformed request bodies', async () => {
