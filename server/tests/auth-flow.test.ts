@@ -204,18 +204,31 @@ test('authentication, session compatibility and guest cart merge', { timeout: 60
       deliveryAddress: 'Тестовая улица, 1',
       deliveryPostalCode: '123456',
       deliveryComment: 'Позвонить',
-      expectedTotal: 200,
-      idempotencyKey: `test-order-${randomUUID()}`,
     };
     const invalidDelivery = await request(
       '/api/orders',
-      { firstName: 'Test', phone: '123456789', email, ...delivery, deliveryPostalCode: '123' },
+      {
+        firstName: 'Test',
+        phone: '123456789',
+        email,
+        ...delivery,
+        deliveryPostalCode: '123',
+        expectedTotal: 200,
+        idempotencyKey: `test-order-${randomUUID()}`,
+      },
       cookie,
     );
     assert.equal(invalidDelivery.status, 400, 'invalid postal code must be rejected');
     const order = await request(
       '/api/orders',
-      { firstName: 'Test', phone: '123456789', email, ...delivery },
+      {
+        firstName: 'Test',
+        phone: '123456789',
+        email,
+        ...delivery,
+        expectedTotal: 200,
+        idempotencyKey: `test-order-${randomUUID()}`,
+      },
       cookie,
     );
     assert.equal(order.status, 409, 'checkout must reject the complete order when a position exceeds stock');
