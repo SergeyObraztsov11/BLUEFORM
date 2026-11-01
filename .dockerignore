@@ -4,8 +4,11 @@ server/src/generated
 server/dist
 .npm-cache
 .nuxt
+**/.nuxt
 .output
+**/.output
 .data
+**/.data
 .git
 .env
 .env.*

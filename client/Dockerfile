@@ -13,4 +13,4 @@ COPY . /app
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "npx prisma migrate deploy && npx prisma generate && npm run dev -- --host 0.0.0.0 --port 3000"]
+CMD ["sh", "-c", "node scripts/ensure-deps.ts && npx prisma migrate deploy && npx prisma generate --generator client && npm run dev -- --host 0.0.0.0 --port 3000"]
