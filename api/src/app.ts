@@ -1,0 +1,31 @@
+import express from 'express'
+import { apiReference } from '@scalar/express-api-reference'
+import { extendZodWithOpenApi, OpenApiGeneratorV31 } from '@asteasolutions/zod-to-openapi'
+import { z } from 'zod'
+
+extendZodWithOpenApi(z)
+
+export async function createApp() {
+  // Загрузка после расширения Zod позволяет схемам использовать .openapi().
+  const { createHealthModule } = await import('./modules/health/router.js')
+  const app = express()
+  const modules = [createHealthModule()]
+  const generator = new OpenApiGeneratorV31(modules.flatMap(module => module.registry.definitions))
+  const specification = generator.generateDocument({
+    openapi: '3.1.0',
+    info: { title: 'BLUEFORM API', version: '0.1.0' },
+  })
+
+  app.disable('x-powered-by')
+  app.get('/openapi.json', (_request, response) => response.json(specification))
+  app.get('/docs', apiReference({
+    url: '/openapi.json',
+    pageTitle: 'BLUEFORM API',
+    cdn: 'https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.76.0',
+    telemetry: false,
+    withDefaultFonts: false,
+  }))
+  app.use(express.json({ limit: '16kb' }))
+  for (const module of modules) app.use(module.router)
+  return app
+}
