@@ -9,7 +9,7 @@ export default defineEventHandler((event) => {
   const ip = getRequestIP(event, { xForwardedFor: true }) || 'unknown';
   const limit = consumeAdminLoginAttempt(`signin:${ip}`);
   if (!limit.allowed) {
-    setHeader(event, 'Retry-After', String(limit.retryAfterSec));
+    setHeader(event, 'Retry-After', limit.retryAfterSec);
     apiError('ADMIN_LOGIN_RATE_LIMIT');
   }
 });
