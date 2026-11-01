@@ -4,6 +4,9 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   modules: ['@pinia/nuxt'],
+  runtimeConfig: {
+    apiInternalUrl: 'http://127.0.0.1:3001',
+  },
   css: ['~/assets/css/main.css'],
   nitro: {
     inlineDynamicImports: false,

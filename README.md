@@ -32,7 +32,7 @@ BLUEFORM/
 Создайте `.env` в корне на основе `.env.example` и заполните локальные значения. Нужен Docker с Compose.
 
 ```sh
-docker compose --profile new-api up -d --build
+docker compose up -d --build
 ```
 
 - Магазин: http://localhost:3000
