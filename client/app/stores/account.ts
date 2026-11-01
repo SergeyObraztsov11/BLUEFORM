@@ -26,10 +26,12 @@ export const useAccountStore = defineStore('account', () => {
   async function signOut() {
     await authClient.signOut();
     profile.value = null;
-    const [{ useCartStore }, { useFavoritesStore }] = await Promise.all([
+    const [{ useCartStore }, { useFavoritesStore }, { useNotificationsStore }] = await Promise.all([
       import('~/stores/cart'),
       import('~/stores/favorites'),
+      import('~/stores/notifications'),
     ]);
+    useNotificationsStore().clear();
     await Promise.all([useCartStore().load(), useFavoritesStore().load()]);
   }
 

@@ -77,7 +77,16 @@ export const openApi = {
     { name: 'Аккаунт', description: 'Текущая сессия и профиль покупателя.' },
     { name: 'Корзина', description: 'Гость или вошедший пользователь. Чужие позиции недоступны.' },
     { name: 'Избранное', description: 'Список цветомоделей. У гостя и пользователя свои записи.' },
-    { name: 'Заказ', description: 'Создание заказа из активных позиций корзины. Оплаты и доставки нет.' },
+    {
+      name: 'Заказ',
+      description:
+        'Создание заказа из активных позиций корзины. Оплата условная. Статусы: NEW, PROCESSING, SHIPPED, CANCELLED.',
+    },
+    {
+      name: 'Уведомления',
+      description:
+        'In-app уведомления покупателя: регистрация, заказ и будущие смены статуса. Параллельно уходит письмо через SMTP/Mailpit.',
+    },
     { name: 'Сессия гостя', description: 'Перенос или сброс гостевой корзины после входа.' },
     {
       name: 'Авторизация',
@@ -451,6 +460,7 @@ export const openApi = {
                 {
                   id: 'cmvk08eoc00033flqc9izejxj',
                   status: 'NEW',
+                  statusLabel: 'Принят',
                   email: 'maria@example.ru',
                   firstName: 'Мария',
                   phone: '+79991112233',
@@ -479,7 +489,7 @@ export const openApi = {
         tags: ['Заказ'],
         summary: 'Создать заказ',
         description:
-          'Требуется вход. Берёт неснятые позиции с количеством больше 0. Цену и состав считает сервер. Остаток списывается в той же транзакции; если размера не хватает, заказ не создаётся. Позиции корзины после успеха удаляются. Имя и телефон сохраняются в профиль.',
+          'Требуется вход. Берёт неснятые позиции с количеством больше 0. Цену и состав считает сервер. Остаток списывается в той же транзакции; если размера не хватает, заказ не создаётся. Позиции корзины после успеха удаляются. Имя и телефон сохраняются в профиль. Создаёт in-app уведомление и письмо о заказе.',
         operationId: 'createOrder',
         requestBody: {
           required: true,
@@ -492,8 +502,27 @@ export const openApi = {
         },
         responses: {
           '200': json(
-            { $ref: '#/components/schemas/CreatedOrder' },
-            { id: 'cmvk08eoc00033flqc9izejxj', total: 7890, quantity: 1 },
+            { $ref: '#/components/schemas/Order' },
+            {
+              id: 'cmvk08eoc00033flqc9izejxj',
+              status: 'NEW',
+              statusLabel: 'Принят',
+              email: 'maria@example.ru',
+              firstName: 'Мария',
+              phone: '+79991112233',
+              total: 7890,
+              quantity: 1,
+              createdAt: '2026-10-22T12:00:00.000Z',
+              lines: [
+                {
+                  productName: 'Прямые джинсы для женщин',
+                  shade: 'Индиго',
+                  size: '44',
+                  quantity: 1,
+                  price: 7890,
+                },
+              ],
+            },
           ),
           '400': shopResponses(400, {
             name: shopError(400, 'ORDER_NAME_REQUIRED', 'Укажите имя.', 'Пустое имя'),
@@ -533,6 +562,7 @@ export const openApi = {
             {
               id: 'cmvk08eoc00033flqc9izejxj',
               status: 'NEW',
+              statusLabel: 'Принят',
               email: 'maria@example.ru',
               firstName: 'Мария',
               phone: '+79991112233',
@@ -559,6 +589,135 @@ export const openApi = {
               'ORDER_NOT_FOUND',
               'Заказ не найден.',
               'Нет такого заказа у пользователя',
+            ),
+          }),
+        },
+      },
+    },
+    '/api/notifications': {
+      get: {
+        tags: ['Уведомления'],
+        summary: 'Список уведомлений',
+        description: 'До 50 последних уведомлений текущего пользователя и число непрочитанных.',
+        operationId: 'listNotifications',
+        responses: {
+          '200': json(
+            {
+              type: 'object',
+              required: ['items', 'unreadCount'],
+              properties: {
+                items: { type: 'array', items: { $ref: '#/components/schemas/Notification' } },
+                unreadCount: { type: 'integer' },
+              },
+            },
+            {
+              items: [
+                {
+                  id: 'cmvknotif0001',
+                  type: 'ORDER_CREATED',
+                  title: 'Заказ принят',
+                  body: 'Заказ сохранён.',
+                  href: '/orders/cmvk08eoc00033flqc9izejxj',
+                  orderId: 'cmvk08eoc00033flqc9izejxj',
+                  read: false,
+                  createdAt: '2026-10-22T12:00:00.000Z',
+                },
+              ],
+              unreadCount: 1,
+            },
+          ),
+          '401': shopResponses(401, {
+            anonymous: shopError(401, 'SESSION_REQUIRED', 'Нужно войти в аккаунт.', 'Нет сессии'),
+          }),
+        },
+      },
+    },
+    '/api/notifications/welcome': {
+      post: {
+        tags: ['Уведомления'],
+        summary: 'Создать приветствие после регистрации',
+        description:
+          'Идемпотентно: одно уведомление REGISTRATION_SUCCESS на пользователя. При первом создании отправляет письмо.',
+        operationId: 'ensureWelcomeNotification',
+        responses: {
+          '200': json(
+            {
+              type: 'object',
+              required: ['created', 'notification'],
+              properties: {
+                created: { type: 'boolean' },
+                notification: { $ref: '#/components/schemas/Notification' },
+              },
+            },
+            {
+              created: true,
+              notification: {
+                id: 'cmvknotifwelcome',
+                type: 'REGISTRATION_SUCCESS',
+                title: 'Регистрация завершена',
+                body: 'Аккаунт BLUEFORM создан.',
+                href: '/orders',
+                orderId: null,
+                read: false,
+                createdAt: '2026-10-22T12:00:00.000Z',
+              },
+            },
+          ),
+          '401': shopResponses(401, {
+            anonymous: shopError(401, 'SESSION_REQUIRED', 'Нужно войти в аккаунт.', 'Нет сессии'),
+          }),
+        },
+      },
+    },
+    '/api/notifications/read-all': {
+      post: {
+        tags: ['Уведомления'],
+        summary: 'Отметить все уведомления прочитанными',
+        operationId: 'markAllNotificationsRead',
+        responses: {
+          '200': json(
+            {
+              type: 'object',
+              required: ['ok', 'updated'],
+              properties: { ok: { type: 'boolean' }, updated: { type: 'integer' } },
+            },
+            { ok: true, updated: 2 },
+          ),
+          '401': shopResponses(401, {
+            anonymous: shopError(401, 'SESSION_REQUIRED', 'Нужно войти в аккаунт.', 'Нет сессии'),
+          }),
+        },
+      },
+    },
+    '/api/notifications/{id}/read': {
+      patch: {
+        tags: ['Уведомления'],
+        summary: 'Отметить уведомление прочитанным',
+        operationId: 'markNotificationRead',
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        responses: {
+          '200': json(
+            { $ref: '#/components/schemas/Notification' },
+            {
+              id: 'cmvknotif0001',
+              type: 'ORDER_CREATED',
+              title: 'Заказ принят',
+              body: 'Заказ сохранён.',
+              href: '/orders/cmvk08eoc00033flqc9izejxj',
+              orderId: 'cmvk08eoc00033flqc9izejxj',
+              read: true,
+              createdAt: '2026-10-22T12:00:00.000Z',
+            },
+          ),
+          '401': shopResponses(401, {
+            anonymous: shopError(401, 'SESSION_REQUIRED', 'Нужно войти в аккаунт.', 'Нет сессии'),
+          }),
+          '404': shopResponses(404, {
+            missing: shopError(
+              404,
+              'NOTIFICATION_NOT_FOUND',
+              'Уведомление не найдено.',
+              'Нет такого уведомления',
             ),
           }),
         },
@@ -906,15 +1065,6 @@ export const openApi = {
           deliveryComment: { type: 'string', maxLength: 1000 },
         },
       },
-      CreatedOrder: {
-        type: 'object',
-        required: ['id', 'total', 'quantity'],
-        properties: {
-          id: { type: 'string' },
-          total: { type: 'number', description: 'Сумма в рублях.' },
-          quantity: { type: 'integer', description: 'Суммарное количество вещей.' },
-        },
-      },
       Account: {
         type: 'object',
         required: ['user'],
@@ -950,10 +1100,25 @@ export const openApi = {
       },
       Order: {
         type: 'object',
-        required: ['id', 'status', 'email', 'firstName', 'phone', 'total', 'quantity', 'createdAt', 'lines'],
+        required: [
+          'id',
+          'status',
+          'statusLabel',
+          'email',
+          'firstName',
+          'phone',
+          'total',
+          'quantity',
+          'createdAt',
+          'lines',
+        ],
         properties: {
           id: { type: 'string' },
-          status: { type: 'string' },
+          status: {
+            type: 'string',
+            enum: ['NEW', 'PROCESSING', 'SHIPPED', 'CANCELLED'],
+          },
+          statusLabel: { type: 'string', description: 'Человекочитаемый статус на русском.' },
           email: { type: 'string' },
           firstName: { type: 'string' },
           phone: { type: 'string' },
@@ -977,6 +1142,23 @@ export const openApi = {
               },
             },
           },
+        },
+      },
+      Notification: {
+        type: 'object',
+        required: ['id', 'type', 'title', 'body', 'href', 'orderId', 'read', 'createdAt'],
+        properties: {
+          id: { type: 'string' },
+          type: {
+            type: 'string',
+            enum: ['REGISTRATION_SUCCESS', 'ORDER_CREATED', 'ORDER_STATUS_CHANGED'],
+          },
+          title: { type: 'string' },
+          body: { type: 'string' },
+          href: { type: 'string', nullable: true },
+          orderId: { type: 'string', nullable: true },
+          read: { type: 'boolean' },
+          createdAt: { type: 'string', format: 'date-time' },
         },
       },
       AccountUser: {

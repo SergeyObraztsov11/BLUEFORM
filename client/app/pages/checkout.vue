@@ -1,11 +1,31 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useAccountStore } from '~/stores/account';
 import { useCartStore } from '~/stores/cart';
+import { useNotificationsStore } from '~/stores/notifications';
 import { apiErrorMessage } from '~/utils/apiError';
+
+type CreatedOrder = {
+  id: string;
+  status: string;
+  statusLabel: string;
+  total: number;
+  quantity: number;
+  lines: { productName: string; shade: string; size: string; quantity: number; price: number }[];
+};
+
+type SummaryLine = {
+  key: string;
+  name: string;
+  shade: string;
+  size: string;
+  quantity: number;
+  lineTotal: number;
+};
 
 const cart = useCartStore();
 const account = useAccountStore();
+const notifications = useNotificationsStore();
 const firstName = ref('');
 const phone = ref('');
 const email = ref('');
@@ -15,7 +35,7 @@ const deliveryPostalCode = ref('');
 const deliveryComment = ref('');
 const error = ref<string | null>(null);
 const submitting = ref(false);
-const orderId = ref<string | null>(null);
+const createdOrder = ref<CreatedOrder | null>(null);
 const authMode = ref<'login' | 'register' | null>(null);
 const authVisible = ref(false);
 
@@ -47,12 +67,35 @@ watch(
   { immediate: true },
 );
 
+const summaryLines = computed<SummaryLine[]>(() => {
+  if (createdOrder.value) {
+    return createdOrder.value.lines.map((line, index) => ({
+      key: `${createdOrder.value!.id}-${index}`,
+      name: line.productName,
+      shade: line.shade,
+      size: line.size,
+      quantity: line.quantity,
+      lineTotal: line.price * line.quantity,
+    }));
+  }
+  return cart.activeLines.map((line) => ({
+    key: line.key,
+    name: line.product.name,
+    shade: line.product.shade,
+    size: line.size,
+    quantity: line.quantity,
+    lineTotal: line.lineTotal,
+  }));
+});
+
+const summaryTotal = computed(() => createdOrder.value?.total ?? cart.total);
+
 async function submitOrder() {
   if (submitting.value) return;
   error.value = null;
   submitting.value = true;
   try {
-    const order = await $fetch<{ id: string }>('/api/orders', {
+    const order = await $fetch<CreatedOrder>('/api/orders', {
       method: 'POST',
       body: {
         firstName: firstName.value,
@@ -64,8 +107,8 @@ async function submitOrder() {
         deliveryComment: deliveryComment.value,
       },
     });
-    orderId.value = order.id;
-    await cart.load();
+    createdOrder.value = order;
+    await Promise.all([cart.load(), notifications.load()]);
     if (account.isAuthenticated) await account.refresh();
   } catch (reason) {
     error.value = apiErrorMessage(reason);
@@ -83,11 +126,28 @@ useHead({ title: 'Оформление заказа — BLUEFORM', meta: [{ name
 
     <div class="mt-10 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-12">
       <div class="min-w-0 border-t border-seam pt-7">
-        <h2 class="text-2xl font-bold text-ink">{{ orderId ? 'Заказ создан' : 'Данные для оформления' }}</h2>
-        <p v-if="orderId" class="mt-5 max-w-[640px] text-sm leading-6 text-ink/70">
-          Номер заказа <span class="font-semibold text-ink">{{ orderId }}</span
-          >. Заказ сохранён. Оплата условная: деньги не списаны. Способ доставки уточняется вручную.
-        </p>
+        <h2 class="text-2xl font-bold text-ink">
+          {{ createdOrder ? 'Заказ создан' : 'Данные для оформления' }}
+        </h2>
+        <div v-if="createdOrder" class="mt-5 max-w-[640px]">
+          <p class="text-sm leading-6 text-ink/70">
+            Номер заказа
+            <span class="font-semibold text-ink">{{ createdOrder.id.slice(-8).toUpperCase() }}</span
+            >. Статус: <span class="font-semibold text-ink">{{ createdOrder.statusLabel }}</span
+            >. Оплата условная: деньги не списаны. Способ доставки уточняется вручную.
+          </p>
+          <p class="mt-3 text-sm leading-6 text-ink/70">
+            Уведомление отправлено на почту и сохранено в кабинете.
+          </p>
+          <div class="mt-6 flex flex-wrap gap-3">
+            <NuxtLink :to="`/orders/${createdOrder.id}`" class="shop-button-primary">СМОТРЕТЬ ЗАКАЗ</NuxtLink>
+            <NuxtLink
+              to="/notifications"
+              class="inline-flex h-12 items-center px-5 text-sm font-bold text-cobalt hover:text-ink"
+              >Уведомления</NuxtLink
+            >
+          </div>
+        </div>
         <div v-else-if="!account.isAuthenticated" class="mt-7 max-w-[640px]">
           <p class="text-sm leading-6 text-ink/70">
             Чтобы оформить заказ, войдите или зарегистрируйтесь. Товары в корзине сохранятся.
@@ -188,7 +248,10 @@ useHead({ title: 'Оформление заказа — BLUEFORM', meta: [{ name
             ОФОРМИТЬ ЗАКАЗ
           </button>
         </form>
-        <NuxtLink to="/cart" class="mt-8 inline-flex text-sm font-semibold text-cobalt hover:text-ink"
+        <NuxtLink
+          v-if="!createdOrder"
+          to="/cart"
+          class="mt-8 inline-flex text-sm font-semibold text-cobalt hover:text-ink"
           >← Вернуться в корзину</NuxtLink
         >
       </div>
@@ -197,14 +260,14 @@ useHead({ title: 'Оформление заказа — BLUEFORM', meta: [{ name
         <p class="type-label text-cobalt">ВАШ ЗАКАЗ</p>
         <h2 class="mt-3 text-2xl font-bold text-ink">Состав заказа</h2>
         <ul class="mt-6 divide-y divide-ink/15 border-y border-ink/15">
-          <li v-for="line in cart.activeLines" :key="line.key" class="py-4">
-            <p class="text-sm font-semibold text-ink">{{ line.product.name }}</p>
+          <li v-for="line in summaryLines" :key="line.key" class="py-4">
+            <p class="text-sm font-semibold text-ink">{{ line.name }}</p>
             <p class="mt-1 text-xs text-ink/60">
-              {{ line.product.shade }} · размер {{ line.size }} · {{ line.quantity }} шт.
+              {{ line.shade }} · размер {{ line.size }} · {{ line.quantity }} шт.
             </p>
             <p class="mt-2 text-sm font-bold text-ink">{{ line.lineTotal.toLocaleString('ru-RU') }} ₽</p>
           </li>
-          <li v-if="!cart.activeLines.length" class="py-5 text-sm text-ink/60">
+          <li v-if="!summaryLines.length" class="py-5 text-sm text-ink/60">
             В корзине нет товаров для оформления.
           </li>
         </ul>
@@ -212,7 +275,7 @@ useHead({ title: 'Оформление заказа — BLUEFORM', meta: [{ name
           <span>Доставка</span><span>Бесплатно · 0 ₽</span>
         </div>
         <div class="mt-5 flex items-baseline justify-between gap-4 text-lg font-bold text-ink">
-          <span>Итого</span><span>{{ cart.total.toLocaleString('ru-RU') }} ₽</span>
+          <span>Итого</span><span>{{ summaryTotal.toLocaleString('ru-RU') }} ₽</span>
         </div>
       </aside>
     </div>

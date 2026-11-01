@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import { FavoriteW400 as Favorite } from '@material-symbols-svg/vue/sharp/icons/favorite';
 import { LogoutW400 as Logout } from '@material-symbols-svg/vue/sharp/icons/logout';
+import { NotificationsW400 as Notifications } from '@material-symbols-svg/vue/sharp/icons/notifications';
 import { PersonW400 as Person } from '@material-symbols-svg/vue/sharp/icons/person';
 import { ReceiptLongW400 as ReceiptLong } from '@material-symbols-svg/vue/sharp/icons/receipt-long';
 import { SettingsW400 as Settings } from '@material-symbols-svg/vue/sharp/icons/settings';
@@ -16,6 +17,7 @@ const leaving = ref(false);
 const items = [
   { id: 'profile', label: 'Профиль', icon: Person, to: '/profile' },
   { id: 'orders', label: 'Заказы', icon: ReceiptLong, to: '/orders' },
+  { id: 'notifications', label: 'Уведомления', icon: Notifications, to: '/notifications' },
   { id: 'favorites', label: 'Избранное', icon: Favorite, to: '/favorites' },
   { id: 'cart', label: 'Корзина', icon: ShoppingBag, to: '/cart' },
   { id: 'settings', label: 'Настройки', icon: Settings, to: '/settings' },

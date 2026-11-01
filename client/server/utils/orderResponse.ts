@@ -1,3 +1,4 @@
+import { orderStatusLabel } from '../../../shared/order-status';
 import { rubles } from './catalog';
 
 type OrderLine = {
@@ -27,6 +28,7 @@ export function toOrderResponse(order: OrderRecord) {
   return {
     id: order.id,
     status: order.status,
+    statusLabel: orderStatusLabel(order.status),
     email: order.email,
     firstName: order.firstName,
     phone: order.phone,
@@ -46,3 +48,5 @@ export function toOrderResponse(order: OrderRecord) {
     })),
   };
 }
+
+export type OrderResponse = ReturnType<typeof toOrderResponse>;
