@@ -28,6 +28,17 @@ test('current shop exposes anonymous session and catalogue contracts', async () 
   assert.equal(typeof products.pageSize, 'number')
 })
 
+test('current shop rejects anonymous order access and invalid catalogue input', async () => {
+  const [orders, order, invalidPage] = await Promise.all([
+    getJson(`${shop}/api/orders`, 401),
+    getJson(`${shop}/api/orders/not-real`, 401),
+    getJson(`${shop}/api/catalog/products?page=0`, 400),
+  ])
+  assert.equal(orders.code, 'SESSION_REQUIRED')
+  assert.equal(order.code, 'SESSION_REQUIRED')
+  assert.equal(invalidPage.code, 'CATALOG_INVALID_PAGE')
+})
+
 test('Express is available, connected to the database and documents its routes', async () => {
   const [health, ready, openapi] = await Promise.all([
     getJson(`${api}/api/health`),
