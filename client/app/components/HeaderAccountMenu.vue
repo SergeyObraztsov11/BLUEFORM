@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { FavoriteW400 as Favorite } from '@material-symbols-svg/vue/sharp/icons/favorite'
-import { LogoutW400 as Logout } from '@material-symbols-svg/vue/sharp/icons/logout'
-import { PersonW400 as Person } from '@material-symbols-svg/vue/sharp/icons/person'
-import { ReceiptLongW400 as ReceiptLong } from '@material-symbols-svg/vue/sharp/icons/receipt-long'
-import { SettingsW400 as Settings } from '@material-symbols-svg/vue/sharp/icons/settings'
-import { ShoppingBagW400 as ShoppingBag } from '@material-symbols-svg/vue/sharp/icons/shopping-bag'
-import { useAccountStore } from '~/stores/account'
+import { computed, ref } from 'vue';
+import { FavoriteW400 as Favorite } from '@material-symbols-svg/vue/sharp/icons/favorite';
+import { LogoutW400 as Logout } from '@material-symbols-svg/vue/sharp/icons/logout';
+import { PersonW400 as Person } from '@material-symbols-svg/vue/sharp/icons/person';
+import { ReceiptLongW400 as ReceiptLong } from '@material-symbols-svg/vue/sharp/icons/receipt-long';
+import { SettingsW400 as Settings } from '@material-symbols-svg/vue/sharp/icons/settings';
+import { ShoppingBagW400 as ShoppingBag } from '@material-symbols-svg/vue/sharp/icons/shopping-bag';
+import { useAccountStore } from '~/stores/account';
 
-const emit = defineEmits<{ close: [] }>()
-const account = useAccountStore()
-const route = useRoute()
-const leaving = ref(false)
+const emit = defineEmits<{ close: [] }>();
+const account = useAccountStore();
+const route = useRoute();
+const leaving = ref(false);
 
 const items = [
   { id: 'profile', label: 'Профиль', icon: Person, to: '/profile' },
@@ -19,24 +19,27 @@ const items = [
   { id: 'favorites', label: 'Избранное', icon: Favorite, to: '/favorites' },
   { id: 'cart', label: 'Корзина', icon: ShoppingBag, to: '/cart' },
   { id: 'settings', label: 'Настройки', icon: Settings, to: '/settings' },
-]
+];
 
-const profile = computed(() => account.profile)
+const profile = computed(() => account.profile);
 const accountName = computed(() => {
-  const current = profile.value
-  if (!current) return ''
-  const name = [current.firstName, current.lastName].map(part => part.trim()).filter(Boolean).join(' ')
-  return name || current.email
-})
+  const current = profile.value;
+  if (!current) return '';
+  const name = [current.firstName, current.lastName]
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .join(' ');
+  return name || current.email;
+});
 
 async function signOut() {
-  if (leaving.value) return
-  leaving.value = true
+  if (leaving.value) return;
+  leaving.value = true;
   try {
-    await account.signOut()
-    emit('close')
+    await account.signOut();
+    emit('close');
   } finally {
-    leaving.value = false
+    leaving.value = false;
   }
 }
 </script>
@@ -45,7 +48,9 @@ async function signOut() {
   <div role="menu" aria-label="Меню аккаунта">
     <div v-if="profile" class="border-b border-seam px-4 py-3">
       <p class="truncate text-sm font-semibold text-ink">{{ accountName }}</p>
-      <p v-if="accountName !== profile.email" class="mt-0.5 truncate text-xs text-ink/55">{{ profile.email }}</p>
+      <p v-if="accountName !== profile.email" class="mt-0.5 truncate text-xs text-ink/55">
+        {{ profile.email }}
+      </p>
     </div>
     <NuxtLink
       v-for="item in items"

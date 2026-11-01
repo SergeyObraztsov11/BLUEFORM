@@ -1,5 +1,5 @@
 <script setup lang="ts">
-useHead({ title: 'Избранное — BLUEFORM', meta: [{ name: 'robots', content: 'noindex, nofollow' }] })
+useHead({ title: 'Избранное — BLUEFORM', meta: [{ name: 'robots', content: 'noindex, nofollow' }] });
 </script>
 
 <template>

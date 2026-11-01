@@ -23,9 +23,9 @@ const page = `<!doctype html>
     })
   </script>
 </body>
-</html>`
+</html>`;
 
 export default defineEventHandler((event) => {
-  setResponseHeader(event, 'content-type', 'text/html; charset=utf-8')
-  return send(event, page)
-})
+  setResponseHeader(event, 'content-type', 'text/html; charset=utf-8');
+  return send(event, page);
+});

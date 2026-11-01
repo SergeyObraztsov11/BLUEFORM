@@ -1,6 +1,6 @@
-import { openApi } from '../utils/openapi'
+import { openApi } from '../utils/openapi';
 
 export default defineEventHandler((event) => {
-  setResponseHeader(event, 'content-type', 'application/json; charset=utf-8')
-  return openApi
-})
+  setResponseHeader(event, 'content-type', 'application/json; charset=utf-8');
+  return openApi;
+});

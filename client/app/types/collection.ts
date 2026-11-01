@@ -1,1 +1,1 @@
-export type CollectionKind = 'favorites' | 'cart'
+export type CollectionKind = 'favorites' | 'cart';
