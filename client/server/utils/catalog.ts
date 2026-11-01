@@ -1,5 +1,5 @@
 import { catalogCategories } from '../../app/data/catalog-categories'
-import { Prisma } from '../generated/prisma/client'
+import type { Prisma } from '../generated/prisma/client'
 
 export const colorwayInclude = {
   product: { include: { category: { include: { parent: { include: { parent: true } } } } } },

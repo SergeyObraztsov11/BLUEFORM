@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, type Component } from 'vue'
 import { ArrowForwardW400 as ArrowForward } from '@material-symbols-svg/vue/sharp/icons/arrow-forward'
 import { CloseW400 as Close } from '@material-symbols-svg/vue/sharp/icons/close'
 import { FavoriteW400 as Favorite } from '@material-symbols-svg/vue/sharp/icons/favorite'
@@ -46,7 +46,7 @@ const shopLinks = [
   { label: 'Распродажа', to: '/catalog?sale=1', sale: true },
 ]
 
-const accountLinks = computed(() => {
+const accountLinks = computed<{ id: string, label: string, icon: Component, to: string, count?: number }[]>(() => {
   const favoritesLink = { id: 'favorites', label: 'Избранное', icon: Favorite, to: '/favorites', count: favoriteCount.value }
   const cartLink = { id: 'cart', label: 'Корзина', icon: ShoppingBag, to: '/cart', count: cartCount.value }
   if (!profile.value) return [favoritesLink, cartLink]

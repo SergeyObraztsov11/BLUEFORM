@@ -125,7 +125,7 @@ useHead({
         <CatalogSearch v-model="searchModel" />
         <CatalogMobileFilters v-model="filtersModel" v-model:category="categoryModel" :search="search" />
         <CatalogFilters v-model="filtersModel" @reset="resetFilters" />
-        <div ref="resultsHeading" id="catalog-results" class="mb-5 mt-8 flex scroll-mt-36 items-center justify-between gap-4 border-b border-seam pb-4">
+        <div id="catalog-results" ref="resultsHeading" class="mb-5 mt-8 flex scroll-mt-36 items-center justify-between gap-4 border-b border-seam pb-4">
           <h2 class="text-lg font-semibold text-ink">{{ search ? 'Результаты поиска' : categoryTitle }}</h2>
           <span class="text-sm text-ink/60">{{ productCount }}</span>
         </div>

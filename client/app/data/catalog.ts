@@ -6,7 +6,7 @@ import productPlaceholder from '~/assets/images/product-placeholder.webp'
 
 export { fabrics, russianSizes }
 
-export type CatalogCategory = 'all' | CatalogCategorySlug
+export type CatalogCategory = string
 export type CatalogSort = 'default' | 'price-asc' | 'price-desc'
 
 export interface CatalogFilterState {
@@ -54,8 +54,14 @@ export interface CatalogProduct {
 export const catalogProducts: CatalogProduct[] = rawProducts.map((product) => {
   const category = catalogCategories.find(item => item.slug === product.categorySlug)
   if (!category?.fit) throw new Error(`Unknown product category: ${product.categorySlug}`)
+  if (product.category !== 'women' && product.category !== 'men') throw new Error(`Unknown audience: ${product.category}`)
+  if (product.imageKind !== undefined && product.imageKind !== 'fabric' && product.imageKind !== 'product') {
+    throw new Error(`Unknown image kind: ${product.imageKind}`)
+  }
   return {
     ...product,
+    category: product.category,
+    imageKind: product.imageKind,
     categorySlug: category.slug,
     fit: category.fit,
     sizes: product.sizes.map(code => ({ code, stock: 0 })),

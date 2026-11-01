@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { CloseW400 as Close } from '@material-symbols-svg/vue/sharp/icons/close'
-import { useCartStore } from '~/stores/cart'
+import { useCartStore, cartLineInStock  } from '~/stores/cart'
 import { useFavoritesStore } from '~/stores/favorites'
 import type { CollectionKind } from '~/types/collection'
 import { productImage, productImageAlt } from '~/data/catalog'
-import { cartLineInStock } from '~/stores/cart'
+
 
 const props = defineProps<{ kind: CollectionKind }>()
 const emit = defineEmits<{ close: [] }>()

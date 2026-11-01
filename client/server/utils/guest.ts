@@ -116,14 +116,16 @@ export async function currentUserId(event: H3Event) {
   return session?.user.id ?? null
 }
 
-export async function ownerForRead(event: H3Event) {
+type CartOwner = { userId: string } | { guestId: string }
+
+export async function ownerForRead(event: H3Event): Promise<CartOwner | null> {
   const userId = await currentUserId(event)
   if (userId) return { userId }
   const guestId = await guestIdFromCookie(event)
   return guestId ? { guestId } : null
 }
 
-export async function ownerForWrite(event: H3Event) {
+export async function ownerForWrite(event: H3Event): Promise<CartOwner> {
   const userId = await currentUserId(event)
   if (userId) return { userId }
   const existing = await guestIdFromCookie(event)

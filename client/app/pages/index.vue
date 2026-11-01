@@ -9,10 +9,12 @@ useHead({
 </script>
 
 <template>
-  <HeroSection />
-  <BrandStatementSection />
-  <ManifestoSection />
-  <CollectionSection />
-  <DenimPaletteSection />
-  <BrandClosingSection />
+  <div>
+    <HeroSection />
+    <BrandStatementSection />
+    <ManifestoSection />
+    <CollectionSection />
+    <DenimPaletteSection />
+    <BrandClosingSection />
+  </div>
 </template>

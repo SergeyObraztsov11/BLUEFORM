@@ -5,15 +5,15 @@ import type { CatalogCategory, CatalogFilterState, CatalogSort } from '~/data/ca
 
 const filterKeys = ['category', 'shade', 'size', 'fit', 'sale', 'stock', 'minPrice', 'maxPrice', 'sort', 'page', 'q'] as const
 
-function queryValues(value: LocationQuery[string]) {
+function queryValues(value: LocationQuery[string] | undefined) {
   return (Array.isArray(value) ? value : [value]).filter((item): item is string => typeof item === 'string')
 }
 
-function firstQueryValue(value: LocationQuery[string]) {
+function firstQueryValue(value: LocationQuery[string] | undefined) {
   return queryValues(value)[0] ?? ''
 }
 
-function priceValue(value: LocationQuery[string]) {
+function priceValue(value: LocationQuery[string] | undefined) {
   const price = firstQueryValue(value)
   return /^\d{1,9}$/.test(price) ? price : ''
 }
@@ -49,6 +49,8 @@ export function parseCatalogQuery(query: LocationQuery): { category: CatalogCate
 
 export function buildCatalogQuery(baseQuery: LocationQuery, category: CatalogCategory, filters: CatalogFilterState, page = 1, search = ''): LocationQueryRaw {
   const query: LocationQueryRaw = { ...baseQuery }
+  // Keys are restricted to the known catalogue filters above.
+  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
   for (const key of filterKeys) delete query[key]
 
   if (category !== 'all') query.category = category
