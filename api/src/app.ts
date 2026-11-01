@@ -8,8 +8,9 @@ extendZodWithOpenApi(z)
 export async function createApp() {
   // Загрузка после расширения Zod позволяет схемам использовать .openapi().
   const { createHealthModule } = await import('./modules/health/router.js')
+  const { createCatalogModule } = await import('./modules/catalog/router.js')
   const app = express()
-  const modules = [createHealthModule()]
+  const modules = [createHealthModule(), createCatalogModule()]
   const generator = new OpenApiGeneratorV31(modules.flatMap(module => module.registry.definitions))
   const specification = generator.generateDocument({
     openapi: '3.1.0',

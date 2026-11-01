@@ -38,4 +38,13 @@ test('Express is available, connected to the database and documents its routes',
   assert.equal(ready.status, 'ready')
   assert.ok(openapi.paths['/api/health'].get)
   assert.ok(openapi.paths['/api/ready'].get)
+  assert.ok(openapi.paths['/api/catalog/categories'].get)
+})
+
+test('Express categories match the existing shop contract', async () => {
+  const [current, migrated] = await Promise.all([
+    getJson(`${shop}/api/catalog/categories`),
+    getJson(`${api}/api/catalog/categories`),
+  ])
+  assert.deepEqual(migrated, current)
 })

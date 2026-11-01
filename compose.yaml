@@ -12,6 +12,7 @@ services:
     volumes:
       - ./api/src:/app/api/src
       - ./prisma/schema.prisma:/app/prisma/schema.prisma:ro
+      - ./shared:/app/shared:ro
     depends_on:
       db:
         condition: service_healthy

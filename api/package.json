@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "npm run db:generate && tsx watch src/server.ts",
     "build": "npm run db:generate && tsc",
-    "start": "node dist/server.js",
+    "start": "node dist/api/src/server.js",
     "check": "npm run db:generate && tsc --noEmit",
     "db:generate": "prisma generate --schema ../prisma/schema.prisma --generator apiClient",
     "test:contract": "node --test tests/contracts.test.mjs"
