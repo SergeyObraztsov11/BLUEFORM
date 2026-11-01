@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { PrismaPg } from '@prisma/adapter-pg';
+import { hashPassword } from 'better-auth/crypto';
 import { PrismaClient } from '../client/server/generated/prisma/client';
 import { fabrics, russianSizes } from '../client/app/data/catalog-options';
 import { catalogCategories } from '../client/app/data/catalog-categories';
@@ -18,15 +19,58 @@ type TestProduct = {
   model?: { heightCm: number; weightKg?: number; size: string };
 };
 
+type SeedUser = {
+  id: string;
+  email: string;
+  name: string;
+  role: 'user' | 'admin';
+  firstName: string;
+  lastName: string;
+  phone: string;
+};
+
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) throw new Error('DATABASE_URL is required to seed the catalog');
+
+const seedPassword = process.env.SEED_PASSWORD || 'Blueform123!';
+if (seedPassword.length < 8) throw new Error('SEED_PASSWORD must be at least 8 characters');
+
+const seedUsers: SeedUser[] = [
+  {
+    id: 'seed_user_buyer_maria_00000001',
+    email: 'buyer@blueform.local',
+    name: 'Мария Покупатель',
+    role: 'user',
+    firstName: 'Мария',
+    lastName: 'Покупатель',
+    phone: '+79991112233',
+  },
+  {
+    id: 'seed_user_buyer_ivan_00000002',
+    email: 'ivan@blueform.local',
+    name: 'Иван Покупатель',
+    role: 'user',
+    firstName: 'Иван',
+    lastName: 'Покупатель',
+    phone: '+79992223344',
+  },
+  {
+    id: 'seed_user_admin_blueform_00003',
+    email: 'admin@blueform.local',
+    name: 'Админ BLUEFORM',
+    role: 'admin',
+    firstName: 'Админ',
+    lastName: 'BLUEFORM',
+    phone: '+79990000001',
+  },
+];
 
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
 const products = JSON.parse(
   await readFile(new URL('../client/app/data/catalog-test.json', import.meta.url), 'utf8'),
 ) as TestProduct[];
 
-try {
+async function seedCatalog() {
   const sizeSystem = await prisma.sizeSystem.upsert({
     where: { code: 'RU_CLOTHING' },
     update: { name: 'Российские размеры одежды' },
@@ -191,7 +235,78 @@ try {
     }
   }
 
-  console.log(`Seeded ${products.length} colorways and ${await prisma.sku.count()} SKUs`);
+  return {
+    colorways: products.length,
+    skus: await prisma.sku.count(),
+  };
+}
+
+async function seedDemoUsers() {
+  const passwordHash = await hashPassword(seedPassword);
+  const created: string[] = [];
+
+  for (const demo of seedUsers) {
+    const existing = await prisma.user.findUnique({ where: { email: demo.email } });
+    const userId = existing?.id ?? demo.id;
+
+    await prisma.user.upsert({
+      where: { email: demo.email },
+      update: {
+        name: demo.name,
+        emailVerified: true,
+        role: demo.role,
+        banned: false,
+        banReason: null,
+        banExpires: null,
+      },
+      create: {
+        id: userId,
+        name: demo.name,
+        email: demo.email,
+        emailVerified: true,
+        role: demo.role,
+      },
+    });
+
+    await prisma.account.upsert({
+      where: { providerId_accountId: { providerId: 'credential', accountId: userId } },
+      update: { password: passwordHash, userId },
+      create: {
+        id: `seed_account_${userId}`,
+        accountId: userId,
+        providerId: 'credential',
+        userId,
+        password: passwordHash,
+      },
+    });
+
+    await prisma.customerProfile.upsert({
+      where: { userId },
+      update: {
+        firstName: demo.firstName,
+        lastName: demo.lastName,
+        phone: demo.phone,
+      },
+      create: {
+        userId,
+        firstName: demo.firstName,
+        lastName: demo.lastName,
+        phone: demo.phone,
+      },
+    });
+
+    created.push(`${demo.email} (${demo.role})`);
+  }
+
+  return created;
+}
+
+try {
+  const catalog = await seedCatalog();
+  const users = await seedDemoUsers();
+  console.log(`Seeded ${catalog.colorways} colorways and ${catalog.skus} SKUs`);
+  console.log(`Seeded demo users:\n- ${users.join('\n- ')}`);
+  console.log(`Password for all seed users: ${seedPassword}`);
 } finally {
   await prisma.$disconnect();
 }
