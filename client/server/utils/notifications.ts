@@ -87,3 +87,41 @@ export async function notifyRegistrationByEmail(email: string) {
     text: 'Регистрация завершена.\n\nАккаунт BLUEFORM создан. Можно оформлять заказы и сохранять избранное.',
   });
 }
+
+export async function createOrderStatusNotification(
+  db: Db,
+  input: { userId: string; orderId: string; status: string; trackingNumber?: string | null },
+) {
+  const statusLabel = orderStatusLabel(input.status);
+  const title = `Статус заказа: ${statusLabel}`;
+  const tracking =
+    input.trackingNumber && input.status === 'SHIPPED' ? ` Трек-номер: ${input.trackingNumber}.` : '';
+  const body = `Заказ № ${input.orderId.slice(-8).toUpperCase()} теперь «${statusLabel}».${tracking}`;
+  const href = `/orders/${input.orderId}`;
+  return db.notification.create({
+    data: {
+      userId: input.userId,
+      type: 'ORDER_STATUS_CHANGED',
+      title,
+      body,
+      href,
+      orderId: input.orderId,
+    },
+  });
+}
+
+export async function notifyOrderStatusByEmail(input: {
+  email: string;
+  orderId: string;
+  status: string;
+  trackingNumber?: string | null;
+}) {
+  const statusLabel = orderStatusLabel(input.status);
+  const tracking =
+    input.trackingNumber && input.status === 'SHIPPED' ? `\nТрек-номер: ${input.trackingNumber}` : '';
+  await sendShopMail({
+    to: input.email,
+    subject: `BLUEFORM — статус заказа: ${statusLabel}`,
+    text: `Заказ № ${input.orderId.slice(-8).toUpperCase()} теперь «${statusLabel}».${tracking}\n\nОткрыть заказ: /orders/${input.orderId}`,
+  });
+}

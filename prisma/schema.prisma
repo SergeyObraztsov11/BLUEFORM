@@ -307,6 +307,10 @@ enum OrderStatus {
   CANCELLED
 }
 
+enum OrderPaymentStatus {
+  CONDITIONAL
+}
+
 enum NotificationType {
   REGISTRATION_SUCCESS
   ORDER_CREATED
@@ -314,23 +318,29 @@ enum NotificationType {
 }
 
 model Order {
-  id           String      @id @default(cuid())
-  userId       String?
-  email        String
-  firstName    String
-  phone        String
-  deliveryCity String?
+  id              String             @id @default(cuid())
+  userId          String?
+  email           String
+  firstName       String
+  phone           String
+  deliveryCity    String?
   deliveryAddress String?
   deliveryPostalCode String?
   deliveryComment String?
-  status       OrderStatus @default(NEW)
-  totalKopecks Int
-  createdAt    DateTime    @default(now())
-  user         User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
-  items        OrderItem[]
-  notifications Notification[]
+  status          OrderStatus        @default(NEW)
+  paymentStatus   OrderPaymentStatus @default(CONDITIONAL)
+  adminComment    String?
+  trackingNumber  String?
+  totalKopecks    Int
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  user            User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  items           OrderItem[]
+  notifications   Notification[]
 
   @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@index([phone])
   @@map("orders")
 }
 
