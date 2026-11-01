@@ -40,6 +40,7 @@ docker compose up -d --build
 - Документация Express: http://localhost:3001/docs
 - Проверка базы: http://localhost:3001/api/ready
 - Локальные письма: http://localhost:8025
+- Админ-панель заказов: http://localhost:3000/admin/login
 
 После первого запуска заполните каталог и демо-аккаунты:
 

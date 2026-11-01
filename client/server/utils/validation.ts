@@ -33,6 +33,18 @@ export const orderBody = z.object({
   deliveryComment: z.string().trim().max(1000).optional().default(''),
 });
 
+export const adminOrderPatch = z
+  .object({
+    status: z.enum(['NEW', 'PROCESSING', 'SHIPPED', 'CANCELLED']).optional(),
+    adminComment: z.string().trim().max(2000).nullable().optional(),
+    trackingNumber: z.string().trim().max(120).nullable().optional(),
+  })
+  .refine(
+    (value) =>
+      value.status !== undefined || value.adminComment !== undefined || value.trackingNumber !== undefined,
+    { message: 'Нечего обновлять.' },
+  );
+
 const messages: Record<string, ShopErrorCode> = {
   'Нечего обновлять.': 'CART_NOTHING_TO_UPDATE',
   'Укажите имя.': 'ORDER_NAME_REQUIRED',

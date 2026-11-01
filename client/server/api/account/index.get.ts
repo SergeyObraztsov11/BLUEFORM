@@ -5,7 +5,10 @@ export default defineEventHandler(async (event) => {
   const userId = await currentUserId(event);
   if (!userId) return { user: null };
   const [user, profile] = await Promise.all([
-    prisma.user.findUnique({ where: { id: userId }, select: { id: true, email: true, name: true } }),
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true, name: true, role: true },
+    }),
     prisma.customerProfile.findUnique({
       where: { userId },
       select: { firstName: true, lastName: true, phone: true },
@@ -17,6 +20,7 @@ export default defineEventHandler(async (event) => {
       id: user.id,
       email: user.email,
       name: user.name,
+      role: user.role === 'admin' ? 'admin' : 'user',
       firstName: profile?.firstName ?? '',
       lastName: profile?.lastName ?? '',
       phone: profile?.phone ?? '',
