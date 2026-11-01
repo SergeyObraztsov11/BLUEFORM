@@ -46,6 +46,10 @@ export default defineEventHandler(async (event) => {
         email: body.email,
         firstName: body.firstName,
         phone: body.phone,
+        deliveryCity: body.deliveryCity,
+        deliveryAddress: body.deliveryAddress,
+        deliveryPostalCode: body.deliveryPostalCode,
+        deliveryComment: body.deliveryComment || null,
         totalKopecks,
         items: {
           create: items.map((item) => ({

@@ -199,7 +199,23 @@ test('authentication, session compatibility and guest cart merge', { timeout: 60
     assert.equal(cart.items.length, 1);
     assert.equal(cart.items[0]?.quantity, 2, 'both selections should be preserved even above stock');
 
-    const order = await request('/api/orders', { firstName: 'Test', phone: '123456789', email }, cookie);
+    const delivery = {
+      deliveryCity: 'Москва',
+      deliveryAddress: 'Тестовая улица, 1',
+      deliveryPostalCode: '123456',
+      deliveryComment: 'Позвонить',
+    };
+    const invalidDelivery = await request(
+      '/api/orders',
+      { firstName: 'Test', phone: '123456789', email, ...delivery, deliveryPostalCode: '123' },
+      cookie,
+    );
+    assert.equal(invalidDelivery.status, 400, 'invalid postal code must be rejected');
+    const order = await request(
+      '/api/orders',
+      { firstName: 'Test', phone: '123456789', email, ...delivery },
+      cookie,
+    );
     assert.equal(order.status, 409, 'checkout must reject the complete order when a position exceeds stock');
     const user = await prisma.user.findUniqueOrThrow({ where: { email } });
     assert.equal(
@@ -215,11 +231,25 @@ test('authentication, session compatibility and guest cart merge', { timeout: 60
     assert.equal(reduce.status, 200, 'buyer should be able to reduce the merged quantity');
     const successfulOrder = await request(
       '/api/orders',
-      { firstName: 'Test', phone: '123456789', email },
+      { firstName: 'Test', phone: '123456789', email, ...delivery },
       cookie,
     );
     assert.equal(successfulOrder.status, 200, 'signed-in buyer can order the corrected cart');
     assert.equal(await prisma.order.count({ where: { userId: user.id } }), 1);
+    const saved = await prisma.order.findFirstOrThrow({ where: { userId: user.id } });
+    assert.equal(saved.deliveryCity, delivery.deliveryCity);
+    assert.equal(saved.deliveryAddress, delivery.deliveryAddress);
+    assert.equal(saved.deliveryPostalCode, delivery.deliveryPostalCode);
+    assert.equal(saved.deliveryComment, delivery.deliveryComment);
+    const orderResponse = await fetch(`${shop}/api/orders/${saved.id}`, { headers: { cookie } });
+    assert.equal(orderResponse.status, 200);
+    const orderDetails = (await orderResponse.json()) as typeof delivery;
+    assert.deepEqual(
+      Object.fromEntries(
+        Object.keys(delivery).map((key) => [key, orderDetails[key as keyof typeof delivery]]),
+      ),
+      delivery,
+    );
 
     const signout = await request('/api/auth/sign-out', {}, cookie);
     assert.equal(signout.status, 200, 'sign-out should succeed');

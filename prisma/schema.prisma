@@ -309,6 +309,10 @@ model Order {
   email        String
   firstName    String
   phone        String
+  deliveryCity String?
+  deliveryAddress String?
+  deliveryPostalCode String?
+  deliveryComment String?
   status       OrderStatus @default(NEW)
   totalKopecks Int
   createdAt    DateTime    @default(now())

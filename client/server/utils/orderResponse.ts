@@ -14,6 +14,10 @@ type OrderRecord = {
   email: string;
   firstName: string;
   phone: string;
+  deliveryCity: string | null;
+  deliveryAddress: string | null;
+  deliveryPostalCode: string | null;
+  deliveryComment: string | null;
   totalKopecks: number;
   createdAt: Date;
   items: OrderLine[];
@@ -26,6 +30,10 @@ export function toOrderResponse(order: OrderRecord) {
     email: order.email,
     firstName: order.firstName,
     phone: order.phone,
+    deliveryCity: order.deliveryCity,
+    deliveryAddress: order.deliveryAddress,
+    deliveryPostalCode: order.deliveryPostalCode,
+    deliveryComment: order.deliveryComment,
     total: rubles(order.totalKopecks),
     quantity: order.items.reduce((sum, item) => sum + item.quantity, 0),
     createdAt: order.createdAt.toISOString(),
