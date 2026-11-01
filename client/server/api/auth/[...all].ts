@@ -1,3 +1,6 @@
-import { auth } from '../../utils/auth'
-
-export default defineEventHandler((event) => auth.handler(toWebRequest(event)))
+export default defineEventHandler((event) => {
+  const { apiInternalUrl } = useRuntimeConfig(event)
+  const requestUrl = getRequestURL(event)
+  const target = new URL(requestUrl.pathname + requestUrl.search, apiInternalUrl)
+  return proxyRequest(event, target.toString())
+})

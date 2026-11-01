@@ -2,7 +2,9 @@ import express from 'express'
 import { apiReference } from '@scalar/express-api-reference'
 import { extendZodWithOpenApi, OpenApiGeneratorV31 } from '@asteasolutions/zod-to-openapi'
 import { z } from 'zod'
+import { toNodeHandler } from 'better-auth/node'
 import { errorHandler } from './middleware/error-handler.js'
+import { auth } from './modules/auth/auth.js'
 
 extendZodWithOpenApi(z)
 
@@ -27,6 +29,7 @@ export async function createApp() {
     telemetry: false,
     withDefaultFonts: false,
   }))
+  app.all('/api/auth/*path', toNodeHandler(auth))
   app.use(express.json({ limit: '16kb' }))
   for (const module of modules) app.use(module.router)
   app.use(errorHandler)
