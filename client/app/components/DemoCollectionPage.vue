@@ -92,7 +92,8 @@ const shadeHex = (name: string) => fabrics.find(fabric => fabric.name === name)?
             <p class="mt-6 text-sm leading-6 text-ink/65">Деним разных силуэтов и оттенков. Выбери вещь под свой ритм.</p>
           </template>
         </div>
-        <NuxtLink v-if="isCart && cart.totalQuantity > 0" to="/checkout" class="shop-button-primary mt-7 w-full">ПЕРЕЙТИ К ОФОРМЛЕНИЮ</NuxtLink>
+        <p v-if="isCart && cart.hasStockIssues" class="mt-6 text-sm text-error" role="alert">Проверьте наличие и количество товаров в корзине перед оформлением.</p>
+        <NuxtLink v-if="isCart && cart.totalQuantity > 0 && !cart.hasStockIssues" to="/checkout" class="shop-button-primary mt-7 w-full">ПЕРЕЙТИ К ОФОРМЛЕНИЮ</NuxtLink>
         <button v-else-if="isCart" type="button" disabled class="shop-button-primary mt-7 w-full">ПЕРЕЙТИ К ОФОРМЛЕНИЮ</button>
         <NuxtLink to="/catalog" class="mt-4 block text-center text-sm font-semibold text-cobalt hover:text-ink">{{ isCart ? 'Продолжить покупки' : 'Продолжить выбор' }}</NuxtLink>
       </aside>

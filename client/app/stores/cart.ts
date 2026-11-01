@@ -38,6 +38,10 @@ export const useCartStore = defineStore('cart', () => {
     return [...available, ...unavailable]
   })
   const activeLines = computed(() => lines.value.filter(line => cartLineInStock(line.product, line.size)))
+  const hasStockIssues = computed(() => lines.value.some((line) => {
+    const stock = line.product.sizes.find(size => size.code === line.size)?.stock ?? 0
+    return line.quantity > stock || line.quantity > 99
+  }))
   const totalQuantity = computed(() => activeLines.value.reduce((sum, line) => sum + line.quantity, 0))
   const total = computed(() => activeLines.value.reduce((sum, line) => sum + line.lineTotal, 0))
 
@@ -89,5 +93,5 @@ export const useCartStore = defineStore('cart', () => {
     })
   }
 
-  return { items, loaded, error, lines, removedLines, activeLines, totalQuantity, total, load, addItem, updateSelection, changeSize }
+  return { items, loaded, error, lines, removedLines, activeLines, hasStockIssues, totalQuantity, total, load, addItem, updateSelection, changeSize }
 })

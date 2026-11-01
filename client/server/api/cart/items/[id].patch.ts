@@ -34,7 +34,8 @@ export default defineEventHandler(async (event) => {
 
   const quantity = body.quantity ?? item.quantity
   const removed = body.removed ?? item.removed
-  if (!removed && quantity > item.sku.stockQuantity) apiError('OUT_OF_STOCK', { stock: item.sku.stockQuantity })
+  const reducingExisting = !item.removed && body.quantity !== undefined && quantity < item.quantity
+  if (!removed && quantity > item.sku.stockQuantity && !reducingExisting) apiError('OUT_OF_STOCK', { stock: item.sku.stockQuantity })
   await prisma.cartItem.update({
     where: { id: item.id },
     data: { quantity, removed },

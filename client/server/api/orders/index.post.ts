@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
         },
       },
     })
-    const items = (cart?.items ?? []).filter(item => item.sku.stockQuantity >= item.quantity)
+    const items = cart?.items ?? []
     if (!items.length) apiError('ORDER_CART_EMPTY')
 
     for (const item of items) {

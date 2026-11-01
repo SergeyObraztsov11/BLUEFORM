@@ -59,7 +59,8 @@ useHead({ title: 'Оформление заказа — BLUEFORM', meta: [{ name
           <label class="flex flex-col gap-2 text-sm font-semibold text-ink">Телефон<input v-model.trim="phone" type="tel" autocomplete="tel" required placeholder="+7" class="h-12 border border-seam bg-white px-4 font-normal outline-none focus:border-cobalt"></label>
           <label class="flex flex-col gap-2 text-sm font-semibold text-ink sm:col-span-2">Электронная почта<input v-model.trim="email" type="email" autocomplete="email" required placeholder="mail@example.ru" class="h-12 border border-seam bg-white px-4 font-normal outline-none focus:border-cobalt"></label>
           <p v-if="error" class="text-sm text-error sm:col-span-2" role="alert">{{ error }}</p>
-          <button type="submit" class="shop-button-primary sm:col-span-2" :disabled="submitting || !cart.activeLines.length">ОФОРМИТЬ ЗАКАЗ</button>
+          <p v-if="cart.hasStockIssues" class="text-sm text-error sm:col-span-2" role="alert">Вернитесь в корзину и проверьте наличие и количество товаров.</p>
+          <button type="submit" class="shop-button-primary sm:col-span-2" :disabled="submitting || !cart.activeLines.length || cart.hasStockIssues">ОФОРМИТЬ ЗАКАЗ</button>
         </form>
         <NuxtLink to="/cart" class="mt-8 inline-flex text-sm font-semibold text-cobalt hover:text-ink">← Вернуться в корзину</NuxtLink>
       </div>

@@ -52,8 +52,7 @@ async function finishSignIn() {
     await account.refresh()
   }
   try {
-    if (props.mode === 'register') await $fetch('/api/session/adopt', { method: 'POST' })
-    else await $fetch('/api/session/discard', { method: 'POST' })
+    await $fetch('/api/session/adopt', { method: 'POST' })
   } catch (reason) {
     error.value = apiErrorMessage(reason)
     return

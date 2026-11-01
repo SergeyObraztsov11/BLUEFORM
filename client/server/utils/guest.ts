@@ -50,16 +50,16 @@ function activeQuantity(quantity: number, removed: boolean) {
 export async function adoptGuest(event: H3Event, userId: string) {
   const token = readGuestToken(event)
   if (!token) return false
-  const guest = await prisma.guestSession.findUnique({
-    where: { tokenHash: hashGuestToken(token) },
-    include: { cart: { include: { items: true } }, favorites: true },
-  })
-  if (!guest) {
-    clearGuestCookie(event)
-    return false
-  }
-
-  await prisma.$transaction(async (tx) => {
+  const merged = await prisma.$transaction(async (tx) => {
+    const locked = await tx.$queryRaw<{ id: string }[]>`
+      SELECT id FROM guest_sessions WHERE "tokenHash" = ${hashGuestToken(token)} FOR UPDATE
+    `
+    if (!locked.length) return false
+    const guest = await tx.guestSession.findUnique({
+      where: { id: locked[0]!.id },
+      include: { cart: { include: { items: true } }, favorites: true },
+    })
+    if (!guest) return false
     if (guest.cart?.items.length) {
       const userCart = await tx.cart.upsert({
         where: { userId },
@@ -92,10 +92,11 @@ export async function adoptGuest(event: H3Event, userId: string) {
     }
 
     await tx.guestSession.delete({ where: { id: guest.id } })
+    return true
   })
 
   clearGuestCookie(event)
-  return true
+  return merged
 }
 
 export async function discardGuest(event: H3Event) {
