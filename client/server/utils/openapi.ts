@@ -1054,7 +1054,16 @@ export const openApi = {
       },
       CreateOrder: {
         type: 'object',
-        required: ['firstName', 'phone', 'email', 'deliveryCity', 'deliveryAddress', 'deliveryPostalCode'],
+        required: [
+          'firstName',
+          'phone',
+          'email',
+          'deliveryCity',
+          'deliveryAddress',
+          'deliveryPostalCode',
+          'expectedTotal',
+          'idempotencyKey',
+        ],
         properties: {
           firstName: { type: 'string', minLength: 1 },
           phone: { type: 'string', minLength: 1 },
@@ -1063,6 +1072,16 @@ export const openApi = {
           deliveryAddress: { type: 'string', minLength: 1, maxLength: 300 },
           deliveryPostalCode: { type: 'string', pattern: '^\\d{6}$' },
           deliveryComment: { type: 'string', maxLength: 1000 },
+          expectedTotal: {
+            type: 'number',
+            description: 'Сумма на экране оформления в рублях. При расхождении с сервером заказ отклоняется.',
+          },
+          idempotencyKey: {
+            type: 'string',
+            minLength: 8,
+            maxLength: 80,
+            description: 'Ключ повтора: повторный запрос с тем же ключом возвращает уже созданный заказ.',
+          },
         },
       },
       Account: {

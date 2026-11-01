@@ -204,6 +204,8 @@ test('authentication, session compatibility and guest cart merge', { timeout: 60
       deliveryAddress: 'Тестовая улица, 1',
       deliveryPostalCode: '123456',
       deliveryComment: 'Позвонить',
+      expectedTotal: 200,
+      idempotencyKey: `test-order-${randomUUID()}`,
     };
     const invalidDelivery = await request(
       '/api/orders',
@@ -231,7 +233,14 @@ test('authentication, session compatibility and guest cart merge', { timeout: 60
     assert.equal(reduce.status, 200, 'buyer should be able to reduce the merged quantity');
     const successfulOrder = await request(
       '/api/orders',
-      { firstName: 'Test', phone: '123456789', email, ...delivery },
+      {
+        firstName: 'Test',
+        phone: '123456789',
+        email,
+        ...delivery,
+        expectedTotal: 100,
+        idempotencyKey: `test-order-ok-${randomUUID()}`,
+      },
       cookie,
     );
     assert.equal(successfulOrder.status, 200, 'signed-in buyer can order the corrected cart');

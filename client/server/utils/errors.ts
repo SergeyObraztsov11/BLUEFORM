@@ -22,10 +22,18 @@ const shopErrors = {
     status: 409,
     message: 'Недостаточно товара: {product}, {shade}, размер {size}.',
   },
+  ORDER_PRICE_CHANGED: {
+    status: 409,
+    message: 'Цена изменилась. Обновите страницу и проверьте сумму заказа.',
+  },
   ORDER_NOT_FOUND: { status: 404, message: 'Заказ не найден.' },
   NOTIFICATION_NOT_FOUND: { status: 404, message: 'Уведомление не найдено.' },
   SESSION_REQUIRED: { status: 401, message: 'Нужно войти в аккаунт.' },
   ADMIN_REQUIRED: { status: 403, message: 'Нужны права администратора.' },
+  ADMIN_LOGIN_RATE_LIMIT: {
+    status: 429,
+    message: 'Слишком много попыток входа. Подождите минуту и попробуйте снова.',
+  },
   ORDER_STATUS_INVALID: { status: 400, message: 'Этот статус нельзя установить для заказа.' },
   ORDER_STATUS_SAME: { status: 400, message: 'Заказ уже в этом статусе.' },
   PROFILE_NOTHING_TO_UPDATE: { status: 400, message: 'Нечего обновлять.' },

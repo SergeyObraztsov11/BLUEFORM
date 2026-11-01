@@ -8,23 +8,28 @@ const orderInclude = { items: { orderBy: { id: 'asc' as const } } };
 
 export async function listAdminOrders(query: string | undefined) {
   const q = query?.trim();
-  const orders = await prisma.order.findMany({
-    where: q
-      ? {
-          OR: [
-            { id: { contains: q, mode: 'insensitive' } },
-            { phone: { contains: q } },
-            { email: { contains: q, mode: 'insensitive' } },
-            { firstName: { contains: q, mode: 'insensitive' } },
-            { trackingNumber: { contains: q, mode: 'insensitive' } },
-          ],
-        }
-      : undefined,
-    orderBy: { createdAt: 'desc' },
-    take: 100,
-    include: orderInclude,
-  });
-  return { items: orders.map(toOrderResponse) };
+  const where = q
+    ? {
+        OR: [
+          { id: { contains: q, mode: 'insensitive' as const } },
+          { phone: { contains: q } },
+          { email: { contains: q, mode: 'insensitive' as const } },
+          { firstName: { contains: q, mode: 'insensitive' as const } },
+          { trackingNumber: { contains: q, mode: 'insensitive' as const } },
+        ],
+      }
+    : undefined;
+
+  const [orders, newCount] = await Promise.all([
+    prisma.order.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+      include: orderInclude,
+    }),
+    prisma.order.count({ where: { status: 'NEW' } }),
+  ]);
+  return { items: orders.map(toOrderResponse), newCount };
 }
 
 export async function getAdminOrder(id: string) {

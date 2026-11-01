@@ -31,6 +31,8 @@ export const orderBody = z.object({
     .trim()
     .regex(/^\d{6}$/, 'Укажите шестизначный индекс.'),
   deliveryComment: z.string().trim().max(1000).optional().default(''),
+  expectedTotal: z.number().finite().nonnegative(),
+  idempotencyKey: z.string().trim().min(8).max(80),
 });
 
 export const adminOrderPatch = z

@@ -24,6 +24,7 @@ const route = useRoute();
 const router = useRouter();
 const q = ref(typeof route.query.q === 'string' ? route.query.q : '');
 const items = ref<AdminOrder[]>([]);
+const newCount = ref(0);
 const loading = ref(true);
 const error = ref<string | null>(null);
 
@@ -45,14 +46,16 @@ async function load() {
   loading.value = true;
   error.value = null;
   try {
-    const response = await $fetch<{ items: AdminOrder[] }>('/api/admin/orders', {
+    const response = await $fetch<{ items: AdminOrder[]; newCount: number }>('/api/admin/orders', {
       headers: requestHeaders(),
       query: q.value.trim() ? { q: q.value.trim() } : undefined,
     });
     items.value = response.items;
+    newCount.value = response.newCount;
   } catch (reason) {
     error.value = apiErrorMessage(reason);
     items.value = [];
+    newCount.value = 0;
   } finally {
     loading.value = false;
   }
@@ -80,6 +83,7 @@ onMounted(load);
         <p class="type-label text-cobalt">АДМИН</p>
         <h1 class="mt-2 text-3xl font-bold text-ink">Заказы</h1>
         <p class="mt-2 text-sm text-ink/65">Поиск по номеру, телефону, почте или трек-номеру.</p>
+        <p v-if="newCount" class="mt-3 text-sm font-semibold text-cobalt">Новых заказов: {{ newCount }}</p>
       </div>
       <form class="flex w-full max-w-md gap-2" @submit.prevent="search">
         <input
