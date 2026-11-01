@@ -26,21 +26,21 @@ export const catalogCategories = [
   { slug: 'men-jackets', name: 'Джинсовые куртки', parent: 'men', fit: null },
   { slug: 'men-jackets-classic', name: 'Классические', parent: 'men-jackets', fit: 'Классический' },
   { slug: 'men-jackets-loose', name: 'Свободные', parent: 'men-jackets', fit: 'Свободный' },
-] as const
+] as const;
 
-export type CatalogCategorySlug = (typeof catalogCategories)[number]['slug']
-export type CatalogAudience = 'women' | 'men'
+export type CatalogCategorySlug = (typeof catalogCategories)[number]['slug'];
+export type CatalogAudience = 'women' | 'men';
 
 export function categoryBranch(slug: string): string[] {
-  const branch: string[] = []
-  let current = catalogCategories.find(category => category.slug === slug)
+  const branch: string[] = [];
+  let current = catalogCategories.find((category) => category.slug === slug);
   while (current) {
-    branch.unshift(current.slug)
-    current = catalogCategories.find(category => category.slug === current?.parent)
+    branch.unshift(current.slug);
+    current = catalogCategories.find((category) => category.slug === current?.parent);
   }
-  return branch
+  return branch;
 }
 
 export function categoryIncludes(selected: string, leaf: string): boolean {
-  return selected === 'all' || categoryBranch(leaf).includes(selected)
+  return selected === 'all' || categoryBranch(leaf).includes(selected);
 }

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { CatalogProduct } from '~/data/catalog'
+import type { CatalogProduct } from '~/data/catalog';
 
-defineProps<{ products: CatalogProduct[] }>()
+defineProps<{ products: CatalogProduct[] }>();
 </script>
 
 <template>

@@ -18,21 +18,24 @@ const shopErrors = {
   ORDER_NAME_REQUIRED: { status: 400, message: 'Укажите имя.' },
   ORDER_PHONE_REQUIRED: { status: 400, message: 'Укажите телефон.' },
   ORDER_EMAIL_INVALID: { status: 400, message: 'Укажите почту.' },
-  ORDER_INSUFFICIENT_STOCK: { status: 409, message: 'Недостаточно товара: {product}, {shade}, размер {size}.' },
+  ORDER_INSUFFICIENT_STOCK: {
+    status: 409,
+    message: 'Недостаточно товара: {product}, {shade}, размер {size}.',
+  },
   ORDER_NOT_FOUND: { status: 404, message: 'Заказ не найден.' },
   SESSION_REQUIRED: { status: 401, message: 'Нужно войти в аккаунт.' },
   PROFILE_NOTHING_TO_UPDATE: { status: 400, message: 'Нечего обновлять.' },
   PROFILE_PHONE_INVALID: { status: 400, message: 'Укажите телефон.' },
   VALIDATION_FAILED: { status: 400, message: '{message}' },
-} as const
+} as const;
 
-export type ShopErrorCode = keyof typeof shopErrors
+export type ShopErrorCode = keyof typeof shopErrors;
 
 function text(template: string, vars?: Record<string, string | number>) {
-  return template.replace(/\{(\w+)\}/g, (_, key: string) => String(vars?.[key] ?? ''))
+  return template.replace(/\{(\w+)\}/g, (_, key: string) => String(vars?.[key] ?? ''));
 }
 
 export function shopError(code: ShopErrorCode, vars?: Record<string, string | number>) {
-  const spec = shopErrors[code]
-  return { status: spec.status, code, message: text(spec.message, vars) }
+  const spec = shopErrors[code];
+  return { status: spec.status, code, message: text(spec.message, vars) };
 }

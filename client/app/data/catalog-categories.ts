@@ -1,1 +1,1 @@
-﻿export * from '../../../shared/catalog-categories'
+﻿export * from '../../../shared/catalog-categories';

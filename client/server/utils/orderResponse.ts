@@ -1,23 +1,23 @@
-import { rubles } from './catalog'
+import { rubles } from './catalog';
 
 type OrderLine = {
-  quantity: number
-  priceKopecks: number
-  productName: string
-  shade: string
-  sizeCode: string
-}
+  quantity: number;
+  priceKopecks: number;
+  productName: string;
+  shade: string;
+  sizeCode: string;
+};
 
 type OrderRecord = {
-  id: string
-  status: string
-  email: string
-  firstName: string
-  phone: string
-  totalKopecks: number
-  createdAt: Date
-  items: OrderLine[]
-}
+  id: string;
+  status: string;
+  email: string;
+  firstName: string;
+  phone: string;
+  totalKopecks: number;
+  createdAt: Date;
+  items: OrderLine[];
+};
 
 export function toOrderResponse(order: OrderRecord) {
   return {
@@ -29,12 +29,12 @@ export function toOrderResponse(order: OrderRecord) {
     total: rubles(order.totalKopecks),
     quantity: order.items.reduce((sum, item) => sum + item.quantity, 0),
     createdAt: order.createdAt.toISOString(),
-    lines: order.items.map(item => ({
+    lines: order.items.map((item) => ({
       productName: item.productName,
       shade: item.shade,
       size: item.sizeCode,
       quantity: item.quantity,
       price: rubles(item.priceKopecks),
     })),
-  }
+  };
 }

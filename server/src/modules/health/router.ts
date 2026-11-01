@@ -1,11 +1,11 @@
-import { Router } from 'express'
-import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi'
-import { getHealth, getReadiness } from './controller.js'
-import { healthResponseSchema, readinessResponseSchema } from './schema.js'
+import { Router } from 'express';
+import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
+import { getHealth, getReadiness } from './controller.js';
+import { healthResponseSchema, readinessResponseSchema } from './schema.js';
 
 export function createHealthModule() {
-  const router = Router()
-  const registry = new OpenAPIRegistry()
+  const router = Router();
+  const registry = new OpenAPIRegistry();
 
   registry.registerPath({
     method: 'get',
@@ -18,9 +18,9 @@ export function createHealthModule() {
         content: { 'application/json': { schema: healthResponseSchema } },
       },
     },
-  })
+  });
 
-  router.get('/api/health', getHealth)
+  router.get('/api/health', getHealth);
 
   registry.registerPath({
     method: 'get',
@@ -28,11 +28,17 @@ export function createHealthModule() {
     tags: ['Состояние'],
     summary: 'Проверить подключение к базе данных',
     responses: {
-      200: { description: 'База доступна', content: { 'application/json': { schema: readinessResponseSchema } } },
-      503: { description: 'База недоступна', content: { 'application/json': { schema: readinessResponseSchema } } },
+      200: {
+        description: 'База доступна',
+        content: { 'application/json': { schema: readinessResponseSchema } },
+      },
+      503: {
+        description: 'База недоступна',
+        content: { 'application/json': { schema: readinessResponseSchema } },
+      },
     },
-  })
-  router.get('/api/ready', getReadiness)
+  });
+  router.get('/api/ready', getReadiness);
 
-  return { router, registry }
+  return { router, registry };
 }

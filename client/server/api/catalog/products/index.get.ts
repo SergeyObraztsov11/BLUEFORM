@@ -1,3 +1,3 @@
-import { proxyCatalog } from '../../../utils/proxy-catalog'
+import { proxyCatalog } from '../../../utils/proxy-catalog';
 
-export default defineEventHandler(proxyCatalog)
+export default defineEventHandler(proxyCatalog);

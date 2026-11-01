@@ -1,26 +1,26 @@
-import nodemailer from 'nodemailer'
+import nodemailer from 'nodemailer';
 
 export async function sendVerificationCode(email: string, otp: string) {
-  const host = process.env.SMTP_HOST
-  const port = Number(process.env.SMTP_PORT || 1025)
-  const text = `Код подтверждения BLUEFORM: ${otp}. Он действует 5 минут.`
+  const host = process.env.SMTP_HOST;
+  const port = Number(process.env.SMTP_PORT || 1025);
+  const text = `Код подтверждения BLUEFORM: ${otp}. Он действует 5 минут.`;
   if (!host) {
-    console.info(`Verification code for ${email}: ${otp}`)
-    return
+    console.info(`Verification code for ${email}: ${otp}`);
+    return;
   }
 
-  const user = process.env.SMTP_USER
-  const pass = process.env.SMTP_PASS
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
   const transporter = nodemailer.createTransport({
     host,
     port,
     secure: port === 465,
     auth: user ? { user, pass } : undefined,
-  })
+  });
   await transporter.sendMail({
     from: process.env.SMTP_FROM || 'BLUEFORM <noreply@blueform.local>',
     to: email,
     subject: 'Код подтверждения BLUEFORM',
     text,
-  })
+  });
 }
