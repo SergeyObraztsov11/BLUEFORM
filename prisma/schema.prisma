@@ -1,0 +1,347 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../server/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ProductStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum MediaSource {
+  STATIC
+  S3
+}
+
+enum ProductImageKind {
+  PRODUCT
+  TEXTURE
+}
+
+model Category {
+  id        String     @id @default(cuid())
+  parentId  String?
+  name      String
+  slug      String     @unique
+  sortOrder Int        @default(0)
+  isActive  Boolean    @default(true)
+  parent    Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: Restrict)
+  children  Category[] @relation("CategoryTree")
+  products  Product[]
+
+  @@index([parentId, sortOrder])
+  @@map("categories")
+}
+
+model SizeSystem {
+  id       String    @id @default(cuid())
+  code     String    @unique
+  name     String
+  sizes    Size[]
+  products Product[]
+
+  @@map("size_systems")
+}
+
+model Size {
+  id        String     @id @default(cuid())
+  systemId  String
+  code      String
+  sortOrder Int        @default(0)
+  system    SizeSystem @relation(fields: [systemId], references: [id], onDelete: Restrict)
+  skus      Sku[]
+
+  @@unique([systemId, code])
+  @@unique([id, systemId])
+  @@index([systemId, sortOrder])
+  @@map("sizes")
+}
+
+model MediaFile {
+  id         String         @id @default(cuid())
+  source     MediaSource
+  storageKey String
+  mimeType   String
+  width      Int?
+  height     Int?
+  sizeBytes  Int?
+  createdAt  DateTime       @default(now())
+  fabrics    Fabric[]
+  images     ProductImage[]
+
+  @@unique([source, storageKey])
+  @@map("media_files")
+}
+
+model Fabric {
+  id            String            @id @default(cuid())
+  code          String            @unique
+  name          String
+  colorName     String
+  colorHex      String            @db.VarChar(7)
+  colorGroup    String
+  textureFileId String?
+  isActive      Boolean           @default(true)
+  textureFile   MediaFile?        @relation(fields: [textureFileId], references: [id], onDelete: SetNull)
+  colorways     ProductColorway[]
+
+  @@index([colorGroup, isActive])
+  @@map("fabrics")
+}
+
+model Product {
+  id           String            @id @default(cuid())
+  categoryId   String
+  sizeSystemId String
+  name         String
+  slug         String            @unique
+  description  String?
+  status       ProductStatus     @default(DRAFT)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  category     Category          @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  sizeSystem   SizeSystem        @relation(fields: [sizeSystemId], references: [id], onDelete: Restrict)
+  colorways    ProductColorway[]
+
+  @@unique([id, sizeSystemId])
+  @@index([categoryId, status])
+  @@map("products")
+}
+
+model ProductColorway {
+  id                String         @id @default(cuid())
+  productId         String
+  sizeSystemId      String
+  fabricId          String
+  slug              String         @unique
+  status            ProductStatus  @default(DRAFT)
+  modelHeightCm     Int?
+  modelWeightKg     Int?
+  modelWornSizeCode String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  product           Product        @relation(fields: [productId, sizeSystemId], references: [id, sizeSystemId], onDelete: Restrict)
+  fabric            Fabric         @relation(fields: [fabricId], references: [id], onDelete: Restrict)
+  skus              Sku[]
+  images            ProductImage[]
+  favorites         Favorite[]
+
+  @@unique([productId, fabricId])
+  @@unique([id, sizeSystemId])
+  @@index([productId, status])
+  @@map("product_colorways")
+}
+
+model Sku {
+  id              String          @id @default(cuid())
+  colorwayId      String
+  sizeSystemId    String
+  sizeId          String
+  skuCode         String          @unique
+  priceKopecks    Int
+  oldPriceKopecks Int?
+  stockQuantity   Int             @default(0)
+  isActive        Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  colorway        ProductColorway @relation(fields: [colorwayId, sizeSystemId], references: [id, sizeSystemId], onDelete: Restrict)
+  size            Size            @relation(fields: [sizeId, sizeSystemId], references: [id, systemId], onDelete: Restrict)
+  cartItems       CartItem[]
+  orderItems      OrderItem[]
+
+  @@unique([colorwayId, sizeId])
+  @@index([sizeId, isActive])
+  @@map("skus")
+}
+
+model ProductImage {
+  id          String           @id @default(cuid())
+  colorwayId  String
+  mediaFileId String
+  kind        ProductImageKind @default(PRODUCT)
+  alt         String
+  sortOrder   Int              @default(0)
+  colorway    ProductColorway  @relation(fields: [colorwayId], references: [id], onDelete: Cascade)
+  mediaFile   MediaFile        @relation(fields: [mediaFileId], references: [id], onDelete: Restrict)
+
+  @@index([colorwayId, sortOrder])
+  @@map("product_images")
+}
+
+// Better Auth core models.
+model User {
+  id            String           @id
+  name          String
+  email         String           @unique
+  emailVerified Boolean          @default(false)
+  image         String?
+  role          String?          @default("user")
+  banned        Boolean?         @default(false)
+  banReason     String?
+  banExpires    DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+  profile       CustomerProfile?
+  favorites     Favorite[]
+  cart          Cart?
+  orders        Order[]
+
+  @@map("user")
+}
+
+model Session {
+  id             String   @id
+  userId         String
+  token          String   @unique
+  expiresAt      DateTime
+  ipAddress      String?
+  userAgent      String?
+  impersonatedBy String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+model CustomerProfile {
+  userId    String  @id
+  firstName String?
+  lastName  String?
+  phone     String?
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("customer_profiles")
+}
+
+model GuestSession {
+  id        String     @id @default(cuid())
+  tokenHash String     @unique
+  createdAt DateTime   @default(now())
+  cart      Cart?
+  favorites Favorite[]
+
+  @@map("guest_sessions")
+}
+
+model Cart {
+  id        String        @id @default(cuid())
+  userId    String?       @unique
+  guestId   String?       @unique
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  user      User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guest     GuestSession? @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  skuId     String
+  quantity  Int
+  removed   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  sku       Sku      @relation(fields: [skuId], references: [id], onDelete: Restrict)
+
+  @@unique([cartId, skuId])
+  @@index([skuId])
+  @@map("cart_items")
+}
+
+enum OrderStatus {
+  NEW
+}
+
+model Order {
+  id           String      @id @default(cuid())
+  userId       String?
+  email        String
+  firstName    String
+  phone        String
+  status       OrderStatus @default(NEW)
+  totalKopecks Int
+  createdAt    DateTime    @default(now())
+  user         User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  items        OrderItem[]
+
+  @@index([userId, createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id           String @id @default(cuid())
+  orderId      String
+  skuId        String
+  quantity     Int
+  priceKopecks Int
+  productName  String
+  shade        String
+  sizeCode     String
+  order        Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  sku          Sku    @relation(fields: [skuId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+model Favorite {
+  id         String          @id @default(cuid())
+  userId     String?
+  guestId    String?
+  colorwayId String
+  createdAt  DateTime        @default(now())
+  user       User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guest      GuestSession?   @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  colorway   ProductColorway @relation(fields: [colorwayId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, colorwayId])
+  @@unique([guestId, colorwayId])
+  @@index([colorwayId])
+  @@map("favorites")
+}
