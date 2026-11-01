@@ -16,7 +16,8 @@
     "lint:fix": "npm run lint:server -- --fix && npm --prefix client run lint:fix",
     "typecheck": "npm --prefix server run check && npm --prefix client run typecheck",
     "verify": "npm run format:check && npm run lint && npm run typecheck",
-    "check": "npm run verify"
+    "check": "npm run verify",
+    "db:seed": "npm --prefix client run db:seed"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

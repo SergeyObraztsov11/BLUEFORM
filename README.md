@@ -41,6 +41,22 @@ docker compose up -d --build
 - Проверка базы: http://localhost:3001/api/ready
 - Локальные письма: http://localhost:8025
 
+После первого запуска заполните каталог и демо-аккаунты:
+
+```sh
+docker compose exec web npm run db:seed
+```
+
+Seed берёт товары из `client/app/data/catalog-test.json` и создаёт локальных пользователей Better Auth (почта уже подтверждена):
+
+| Почта                  | Роль       | Пароль по умолчанию |
+| ---------------------- | ---------- | ------------------- |
+| `buyer@blueform.local` | покупатель | `Blueform123!`      |
+| `ivan@blueform.local`  | покупатель | `Blueform123!`      |
+| `admin@blueform.local` | admin      | `Blueform123!`      |
+
+Пароль можно переопределить переменной `SEED_PASSWORD` в `.env` / окружении контейнера. Эти учётки только для локальной разработки.
+
 Scalar загружает браузерный скрипт с CDN и требует доступа к интернету. Проверка `health` не проверяет базу; для этого используйте `ready`.
 
 ## Проверки
