@@ -15,6 +15,7 @@ type OrderDetail = {
   deliveryAddress: string | null;
   deliveryPostalCode: string | null;
   deliveryComment: string | null;
+  trackingNumber: string | null;
   total: number;
   quantity: number;
   createdAt: string;
@@ -92,7 +93,7 @@ watch(orderId, () => {
     <div v-else-if="error" class="max-w-[640px]">
       <p class="text-sm text-error" role="alert">{{ error }}</p>
       <div class="mt-6 flex flex-wrap gap-3">
-        <button type="button" class="shop-button-primary" @click="loadOrder">ПОВТОРИТЬ</button>
+        <button type="button" class="shop-button-primary" @click="loadOrder">Повторить</button>
         <NuxtLink
           to="/orders"
           class="inline-flex h-12 items-center px-5 text-sm font-bold text-cobalt hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
@@ -104,17 +105,14 @@ watch(orderId, () => {
 
     <div v-else-if="order" class="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-12">
       <div class="min-w-0">
-        <div class="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 class="text-xl font-bold tracking-tight text-ink sm:text-2xl">
-              {{ order.statusLabel }}
-            </h2>
-            <p class="mt-2 text-sm text-ink/60">{{ formatWhen(order.createdAt) }}</p>
-          </div>
-          <p class="max-w-[16rem] text-sm leading-5 text-ink/60">Оплата условная · деньги не списаны</p>
-        </div>
+        <p class="text-lg font-semibold text-ink">{{ order.statusLabel }}</p>
+        <p class="mt-2 text-sm text-ink/60">{{ formatWhen(order.createdAt) }}</p>
+        <p class="mt-3 text-sm leading-6 text-ink/65">При оформлении деньги не списаны.</p>
+        <p v-if="order.trackingNumber" class="mt-3 text-sm text-ink">
+          Трек-номер: <span class="font-semibold">{{ order.trackingNumber }}</span>
+        </p>
 
-        <h3 class="mt-8 text-lg font-bold text-ink">Состав</h3>
+        <h2 class="mt-8 text-lg font-semibold text-ink">Состав</h2>
         <ul class="mt-4 divide-y divide-seam border-y border-seam">
           <li v-for="(line, index) in order.lines" :key="index" class="flex justify-between gap-4 py-4">
             <div class="min-w-0">
@@ -129,7 +127,7 @@ watch(orderId, () => {
           </li>
         </ul>
 
-        <h3 class="mt-10 text-lg font-bold text-ink">Доставка и контакты</h3>
+        <h2 class="mt-10 text-lg font-semibold text-ink">Контакты и адрес</h2>
         <p class="mt-2 text-sm leading-6 text-ink/65">
           Доставка бесплатная. Способ доставки уточняется вручную.
         </p>
@@ -165,23 +163,15 @@ watch(orderId, () => {
         </dl>
       </div>
 
-      <aside class="bg-ice p-6 sm:p-8 lg:sticky lg:top-28" aria-label="Итог заказа">
-        <p class="type-label text-cobalt">ИТОГО</p>
-        <h2 class="mt-3 text-xl font-bold text-ink">Заказ № {{ shortId }}</h2>
-        <div class="mt-5 flex justify-between gap-4 border-t border-ink/15 pt-5 text-sm text-ink/70">
-          <span>Товары</span><span>{{ order.quantity }} шт.</span>
+      <aside
+        class="w-full border border-seam bg-white p-5 sm:p-6 lg:sticky lg:top-28"
+        aria-label="Итог заказа"
+      >
+        <div class="flex items-baseline justify-between gap-4 text-lg font-bold text-ink">
+          <span>Итого</span>
+          <span>{{ order.total.toLocaleString('ru-RU') }} ₽</span>
         </div>
-        <div class="mt-3 flex justify-between gap-4 text-sm text-ink/70">
-          <span>Доставка</span><span>Бесплатно · 0 ₽</span>
-        </div>
-        <div
-          class="mt-5 flex items-baseline justify-between gap-4 border-t border-ink/15 pt-5 text-lg font-bold text-ink"
-        >
-          <span>Сумма</span><span>{{ order.total.toLocaleString('ru-RU') }} ₽</span>
-        </div>
-        <p class="mt-4 text-xs leading-5 text-ink/55">
-          Оплата условная: деньги не списаны. Статус обновится, когда заказ возьмут в работу.
-        </p>
+        <p class="mt-3 text-sm text-ink/65">Доставка бесплатно</p>
         <NuxtLink
           to="/catalog"
           class="mt-6 block text-center text-sm font-semibold text-cobalt hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"

@@ -40,7 +40,13 @@ async function submit() {
     }
     await account.refresh();
     if (!account.isAdmin) {
-      await account.signOut();
+      try {
+        await account.signOut();
+      } catch (reason) {
+        error.value =
+          reason instanceof Error ? reason.message : 'Не удалось выйти из аккаунта. Попробуйте ещё раз.';
+        return;
+      }
       error.value = 'Этот аккаунт не имеет прав администратора.';
       return;
     }

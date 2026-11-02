@@ -5,7 +5,6 @@ import { LogoutW400 as Logout } from '@material-symbols-svg/vue/sharp/icons/logo
 import { NotificationsW400 as Notifications } from '@material-symbols-svg/vue/sharp/icons/notifications';
 import { PersonW400 as Person } from '@material-symbols-svg/vue/sharp/icons/person';
 import { ReceiptLongW400 as ReceiptLong } from '@material-symbols-svg/vue/sharp/icons/receipt-long';
-import { SettingsW400 as Settings } from '@material-symbols-svg/vue/sharp/icons/settings';
 import { ShoppingBagW400 as ShoppingBag } from '@material-symbols-svg/vue/sharp/icons/shopping-bag';
 import { useAccountStore } from '~/stores/account';
 
@@ -13,6 +12,7 @@ const emit = defineEmits<{ close: [] }>();
 const account = useAccountStore();
 const route = useRoute();
 const leaving = ref(false);
+const signOutError = ref('');
 
 const items = [
   { id: 'profile', label: 'Профиль', icon: Person, to: '/profile' },
@@ -20,7 +20,6 @@ const items = [
   { id: 'notifications', label: 'Уведомления', icon: Notifications, to: '/notifications' },
   { id: 'favorites', label: 'Избранное', icon: Favorite, to: '/favorites' },
   { id: 'cart', label: 'Корзина', icon: ShoppingBag, to: '/cart' },
-  { id: 'settings', label: 'Настройки', icon: Settings, to: '/settings' },
 ];
 
 const profile = computed(() => account.profile);
@@ -37,9 +36,13 @@ const accountName = computed(() => {
 async function signOut() {
   if (leaving.value) return;
   leaving.value = true;
+  signOutError.value = '';
   try {
     await account.signOut();
     emit('close');
+  } catch (reason) {
+    signOutError.value =
+      reason instanceof Error ? reason.message : 'Не удалось выйти из аккаунта. Попробуйте ещё раз.';
   } finally {
     leaving.value = false;
   }
@@ -77,6 +80,7 @@ async function signOut() {
         <Logout :size="20" class="shrink-0" aria-hidden="true" />
         {{ leaving ? 'Выходим…' : 'Выйти' }}
       </button>
+      <p v-if="signOutError" class="px-4 pb-2 text-xs text-error" role="alert">{{ signOutError }}</p>
     </div>
   </nav>
 </template>

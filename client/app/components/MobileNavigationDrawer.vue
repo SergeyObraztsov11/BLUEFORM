@@ -7,7 +7,6 @@ import { LogoutW400 as Logout } from '@material-symbols-svg/vue/sharp/icons/logo
 import { NotificationsW400 as Notifications } from '@material-symbols-svg/vue/sharp/icons/notifications';
 import { PersonW400 as Person } from '@material-symbols-svg/vue/sharp/icons/person';
 import { ReceiptLongW400 as ReceiptLong } from '@material-symbols-svg/vue/sharp/icons/receipt-long';
-import { SettingsW400 as Settings } from '@material-symbols-svg/vue/sharp/icons/settings';
 import { ShoppingBagW400 as ShoppingBag } from '@material-symbols-svg/vue/sharp/icons/shopping-bag';
 import { scrollToSection } from '~/composables/useSectionNavigation';
 import { useAccountStore } from '~/stores/account';
@@ -24,6 +23,7 @@ const notifications = useNotificationsStore();
 const route = useRoute();
 const closeButton = ref<HTMLButtonElement | null>(null);
 const leaving = ref(false);
+const signOutError = ref('');
 
 const cartCount = computed(() => cart.activeLines.length);
 const favoriteCount = computed(() => favorites.items.length);
@@ -81,7 +81,6 @@ const accountLinks = computed<{ id: string; label: string; icon: Component; to: 
       },
       favoritesLink,
       cartLink,
-      { id: 'settings', label: 'Настройки', icon: Settings, to: '/settings' },
     ];
   },
 );
@@ -106,9 +105,13 @@ function openSection(hash: string) {
 async function signOut() {
   if (leaving.value) return;
   leaving.value = true;
+  signOutError.value = '';
   try {
     await account.signOut();
     emit('close');
+  } catch (reason) {
+    signOutError.value =
+      reason instanceof Error ? reason.message : 'Не удалось выйти из аккаунта. Попробуйте ещё раз.';
   } finally {
     leaving.value = false;
   }
@@ -262,6 +265,7 @@ async function signOut() {
         <Logout :size="22" class="shrink-0" aria-hidden="true" />
         {{ leaving ? 'Выходим…' : 'Выйти' }}
       </button>
+      <p v-if="signOutError" class="px-1 pb-2 text-sm text-error" role="alert">{{ signOutError }}</p>
     </div>
   </UiModalShell>
 </template>
