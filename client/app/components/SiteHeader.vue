@@ -44,8 +44,9 @@ const accountMenuLabel = computed(() => {
   return name ? `Меню аккаунта, ${name}` : `Меню аккаунта, ${profile.email}`;
 });
 
+/** Shared geometry; colors stay conditional so sale red never fights cobalt utilities. */
 const navLinkClass =
-  'px-1.5 py-3 text-[13px] font-semibold transition-colors hover:text-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt';
+  'px-1.5 py-3 text-[13px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt';
 
 const links = [
   { label: 'Главная', href: '#top' },
@@ -65,6 +66,15 @@ function isCurrentCatalogLink(to: string) {
   if (to.includes('category=women')) return String(route.query.category ?? '').startsWith('women');
   if (to.includes('category=men')) return String(route.query.category ?? '').startsWith('men');
   return false;
+}
+
+function navLinkTone(link: (typeof links)[number], current: boolean) {
+  if ('sale' in link && link.sale) {
+    return current
+      ? 'text-sale underline underline-offset-4 hover:text-sale focus-visible:text-sale'
+      : 'text-sale hover:text-sale focus-visible:text-sale';
+  }
+  return current ? 'text-cobalt' : 'text-ink hover:text-cobalt';
 }
 
 function closePanels() {
@@ -145,7 +155,7 @@ watch(isDesktopNav, () => {
           <a
             v-if="'href' in link && link.href"
             :href="`/${link.href}`"
-            :class="[navLinkClass, isHomeCurrent() ? 'text-cobalt' : 'text-ink']"
+            :class="[navLinkClass, navLinkTone(link, isHomeCurrent())]"
             :aria-current="isHomeCurrent() ? 'page' : undefined"
             @click.prevent="navigate(link.href)"
             >{{ link.label }}</a
@@ -153,7 +163,7 @@ watch(isDesktopNav, () => {
           <NuxtLink
             v-else-if="'to' in link && link.to"
             :to="link.to"
-            :class="[navLinkClass, isCurrentCatalogLink(link.to) ? 'text-cobalt' : 'text-ink']"
+            :class="[navLinkClass, navLinkTone(link, isCurrentCatalogLink(link.to))]"
             :aria-current="isCurrentCatalogLink(link.to) ? 'page' : undefined"
             @click="closePanels"
             >{{ link.label }}</NuxtLink
