@@ -26,7 +26,10 @@ export const useAccountStore = defineStore('account', () => {
   }
 
   async function signOut() {
-    await authClient.signOut();
+    const result = await authClient.signOut();
+    if (result.error) {
+      throw new Error('Не удалось выйти из аккаунта. Попробуйте ещё раз.');
+    }
     profile.value = null;
     const [{ useCartStore }, { useFavoritesStore }, { useNotificationsStore }] = await Promise.all([
       import('~/stores/cart'),

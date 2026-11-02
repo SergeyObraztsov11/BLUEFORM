@@ -5,6 +5,7 @@ import { useAccountStore } from '~/stores/account';
 const account = useAccountStore();
 const route = useRoute();
 const leaving = ref(false);
+const signOutError = ref('');
 
 const showNav = computed(() => account.isAdmin && route.path !== '/admin/login');
 const ordersActive = computed(() => route.path.startsWith('/admin/orders'));
@@ -12,9 +13,13 @@ const ordersActive = computed(() => route.path.startsWith('/admin/orders'));
 async function signOut() {
   if (leaving.value) return;
   leaving.value = true;
+  signOutError.value = '';
   try {
     await account.signOut();
     await navigateTo('/admin/login');
+  } catch (reason) {
+    signOutError.value =
+      reason instanceof Error ? reason.message : 'Не удалось выйти из аккаунта. Попробуйте ещё раз.';
   } finally {
     leaving.value = false;
   }
@@ -51,15 +56,20 @@ async function signOut() {
           >
             {{ account.profile.email }}
           </span>
-          <button
-            type="button"
-            class="inline-flex min-h-10 items-center px-2 text-sm font-semibold text-ink/70 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt disabled:cursor-wait disabled:opacity-40"
-            :disabled="leaving"
-            :aria-busy="leaving"
-            @click="signOut"
-          >
-            {{ leaving ? 'Выходим…' : 'Выйти' }}
-          </button>
+          <div class="flex flex-col items-end gap-1">
+            <button
+              type="button"
+              class="inline-flex min-h-10 items-center px-2 text-sm font-semibold text-ink/70 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt disabled:cursor-wait disabled:opacity-40"
+              :disabled="leaving"
+              :aria-busy="leaving"
+              @click="signOut"
+            >
+              {{ leaving ? 'Выходим…' : 'Выйти' }}
+            </button>
+            <p v-if="signOutError" class="max-w-[220px] text-right text-xs text-error" role="alert">
+              {{ signOutError }}
+            </p>
+          </div>
         </div>
       </div>
     </header>
