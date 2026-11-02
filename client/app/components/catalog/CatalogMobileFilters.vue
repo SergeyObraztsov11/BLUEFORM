@@ -126,9 +126,8 @@ function applyFilters() {
     <div id="catalog-mobile-filter-panel" class="flex h-full min-h-0 flex-col">
       <div class="shrink-0 bg-cobalt px-6 py-6 text-white">
         <div class="mx-auto flex w-full max-w-[640px] items-start justify-between gap-4">
-          <div>
-            <p class="type-label text-white/80">BLUEFORM / КАТАЛОГ</p>
-            <h2 id="catalog-mobile-filter-title" class="type-heading mt-3 text-[28px]">ФИЛЬТРЫ</h2>
+          <div class="min-w-0 pt-1">
+            <h2 id="catalog-mobile-filter-title" class="type-heading text-[28px]">ФИЛЬТРЫ</h2>
           </div>
           <button
             ref="closeButton"

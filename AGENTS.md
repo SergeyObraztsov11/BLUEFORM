@@ -5,5 +5,6 @@
 - [Git и коммиты](.agent/rules/git.md) — при работе с Git.
 - [Качество кода](.agent/rules/code-quality.md) — при написании и изменении кода.
 - [Документация](.agent/rules/documentation.md) — при создании и изменении документации.
+- [Работа с Cursor](.agent/rules/cursor.md) — при постановке и приёмке задач Cursor.
 
 Каталог всех правил и порядок их расширения — в [индексе правил](.agent/README.md). Навигация по документации проекта — в [docs/README.md](docs/README.md).

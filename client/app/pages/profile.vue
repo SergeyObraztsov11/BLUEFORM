@@ -40,7 +40,10 @@ async function saveProfile() {
 
 <template>
   <section class="min-h-[70vh] pb-20 pt-5 md:pt-6">
-    <ShopPageBanner title="МОЙ ПРОФИЛЬ" lead="Личные данные и всё важное о ваших покупках в BLUEFORM." />
+    <ShopPageBanner
+      title="МОЙ ПРОФИЛЬ"
+      lead="Имя, телефон и быстрые ссылки на заказы, избранное и настройки."
+    />
 
     <div class="mt-8 grid items-start gap-8 lg:mt-12 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-12">
       <div class="min-w-0">

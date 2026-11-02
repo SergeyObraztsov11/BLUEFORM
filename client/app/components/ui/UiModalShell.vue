@@ -16,12 +16,20 @@ const props = withDefaults(
 const emit = defineEmits<{ close: []; opened: []; 'after-leave': [] }>();
 
 const panel = ref<HTMLElement | null>(null);
+/** Element that opened the dialog; captured before enter animation / inner focus. */
+let openerEl: HTMLElement | null = null;
+
 const scrollLocked = useScrollLock(() => (typeof document === 'undefined' ? null : document.documentElement));
 const { activate, deactivate } = useFocusTrap(panel, {
   initialFocus: false,
   escapeDeactivates: false,
   clickOutsideDeactivates: false,
   returnFocusOnDeactivate: true,
+  setReturnFocus: () => {
+    if (openerEl?.isConnected) return openerEl;
+    // Opener gone (navigation / successful auth remount) — do not steal focus.
+    return false;
+  },
 });
 
 useDismissableLayer(
@@ -30,10 +38,24 @@ useDismissableLayer(
   () => emit('close'),
 );
 
+function captureOpener() {
+  if (import.meta.server) {
+    openerEl = null;
+    return;
+  }
+  const active = document.activeElement;
+  openerEl =
+    active instanceof HTMLElement && active !== document.body && active !== document.documentElement
+      ? active
+      : null;
+}
+
 watch(
   () => props.visible,
   (visible) => {
     if (visible) {
+      // Capture before transition and before child @opened focuses an input.
+      captureOpener();
       scrollLocked.value = true;
     } else {
       deactivate();
@@ -45,10 +67,14 @@ watch(
 onBeforeUnmount(() => {
   deactivate();
   scrollLocked.value = false;
+  openerEl = null;
 });
 
 function afterLeave() {
-  if (!props.visible) scrollLocked.value = false;
+  if (!props.visible) {
+    openerEl = null;
+    scrollLocked.value = false;
+  }
   emit('after-leave');
 }
 

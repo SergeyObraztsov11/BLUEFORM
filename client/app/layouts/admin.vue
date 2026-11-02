@@ -26,7 +26,7 @@ async function signOut() {
     <header class="border-b border-seam bg-white">
       <div class="mx-auto flex max-w-[1100px] flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6">
         <div class="min-w-0">
-          <p class="type-label text-cobalt">BLUEFORM / ADMIN</p>
+          <p class="type-label text-cobalt">BLUEFORM ADMIN</p>
           <p class="mt-1 text-sm font-semibold text-ink">Панель заказов</p>
         </div>
         <div v-if="showNav" class="flex flex-wrap items-center gap-3 sm:gap-4">

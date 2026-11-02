@@ -4,7 +4,7 @@ import { emptyCatalogFilters } from '~/data/catalog';
 import { buildCatalogQuery, catalogQuerySignature, parseCatalogQuery } from '~/utils/catalogQuery';
 import type { CatalogCategory } from '~/data/catalog';
 
-const { data: catalog, status: catalogStatus } = await useCatalogProducts();
+const { data: catalog, status: catalogStatus, refresh } = await useCatalogProducts();
 const { data: categoryTree } = await useCatalogCategories();
 const products = computed(() => catalog.value?.items ?? []);
 const pageSize = computed(() => catalog.value?.pageSize ?? 8);
@@ -167,12 +167,14 @@ useHead({
             @update:page="selectPage"
           />
         </template>
-        <p
+        <div
           v-else-if="catalogStatus === 'error'"
-          class="border border-seam bg-ice px-5 py-10 text-center text-sm text-ink/70"
+          class="border border-seam bg-ice px-5 py-10 text-center sm:px-8"
         >
-          Не удалось загрузить каталог.
-        </p>
+          <p class="text-lg font-semibold text-ink">Не удалось загрузить каталог</p>
+          <p class="mt-2 text-sm text-ink/65">Проверьте соединение и попробуйте снова.</p>
+          <button type="button" class="shop-button-primary mt-5" @click="refresh()">ПОВТОРИТЬ</button>
+        </div>
         <div
           v-else-if="catalogStatus !== 'pending'"
           class="border border-seam bg-ice px-5 py-10 text-center sm:px-8"
@@ -180,6 +182,7 @@ useHead({
           <p class="text-lg font-semibold text-ink">
             {{ search ? 'По вашему запросу ничего не найдено' : 'По выбранным параметрам товары не найдены' }}
           </p>
+          <p class="mt-2 text-sm text-ink/65">Сбросьте фильтры или откройте весь каталог.</p>
           <button type="button" class="shop-button-secondary mt-5" @click="resetAll">
             Сбросить поиск и фильтры
           </button>

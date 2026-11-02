@@ -305,9 +305,10 @@ function dismissMutationError() {
           ПЕРЕЙТИ К ОФОРМЛЕНИЮ
         </button>
         <NuxtLink
+          v-if="isCart"
           to="/catalog"
           class="mt-4 block text-center text-sm font-semibold text-cobalt hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
-          >{{ isCart ? 'Продолжить покупки' : 'Продолжить выбор' }}</NuxtLink
+          >Продолжить покупки</NuxtLink
         >
       </aside>
     </div>

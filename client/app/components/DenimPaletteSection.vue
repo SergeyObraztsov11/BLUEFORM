@@ -83,26 +83,27 @@ function syncControls(instance: SwiperCore) {
               height="800"
               loading="lazy"
             />
-            <h3 class="mt-4 text-[1.125rem] leading-tight font-bold tracking-[-0.02em] text-ink">
-              {{ fabric.name }}
-            </h3>
-            <p
-              class="mt-2 flex items-center gap-2 font-mono text-[0.75rem] font-medium tracking-[0.04em] text-ink"
-            >
+            <div class="mt-4 flex min-w-0 items-center gap-2.5">
               <span
-                class="size-3 shrink-0 border border-ink/15"
+                class="size-3.5 shrink-0 border border-ink/15"
                 :style="{ backgroundColor: fabric.hex }"
                 aria-hidden="true"
               />
-              {{ fabric.hex }}
-            </p>
-            <span class="type-label mt-5 flex items-center gap-2 self-start text-cobalt">
-              Смотреть оттенок
-              <ArrowForward :size="17" aria-hidden="true" />
-            </span>
+              <h3 class="truncate text-[1.125rem] leading-tight font-bold tracking-[-0.02em] text-ink">
+                {{ fabric.name }}
+              </h3>
+            </div>
           </article>
         </SwiperSlide>
       </Swiper>
+    </div>
+    <div class="mt-8 flex justify-end md:mt-10">
+      <NuxtLink
+        to="/catalog"
+        class="shop-button-primary min-w-[12rem] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
+      >
+        СМОТРЕТЬ КАТАЛОГ
+      </NuxtLink>
     </div>
   </section>
 </template>

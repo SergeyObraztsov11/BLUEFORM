@@ -255,7 +255,7 @@ useHead({ title: 'Оформление заказа — BLUEFORM', meta: [{ name
           </p>
           <div class="mt-6 flex flex-wrap gap-3">
             <button type="button" class="shop-button-primary" @click="openAuth('login')">ВОЙТИ</button>
-            <button type="button" class="shop-button-primary" @click="openAuth('register')">
+            <button type="button" class="shop-button-secondary" @click="openAuth('register')">
               РЕГИСТРАЦИЯ
             </button>
           </div>

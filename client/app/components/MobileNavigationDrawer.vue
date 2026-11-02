@@ -126,7 +126,7 @@ async function signOut() {
   >
     <div class="flex shrink-0 items-start justify-between gap-4 bg-cobalt px-6 py-6 text-white">
       <div class="min-w-0">
-        <p class="type-label text-white/80">BLUEFORM / МАГАЗИН</p>
+        <p class="type-label text-white/80">BLUEFORM</p>
         <div v-if="profile" class="mt-5 flex items-center gap-3.5">
           <div
             class="flex size-14 shrink-0 items-center justify-center rounded-full bg-white text-[15px] font-bold tracking-[0.04em] text-cobalt"

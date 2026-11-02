@@ -24,8 +24,14 @@
             СВОБОДНЫЙ<br />СИЛУЭТ
           </h3>
           <p class="type-body mt-5 max-w-[310px] max-md:mt-4">
-            Сочетай с простой футболкой или строгим жакетом: один фасон работает в разных образах.
+            Сочетай с простой футболкой или строгим жакетом: свободная посадка работает в разных образах.
           </p>
+          <NuxtLink
+            to="/catalog"
+            class="mt-6 inline-flex min-h-12 items-center text-sm font-bold tracking-[0.04em] text-cobalt transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
+          >
+            СМОТРЕТЬ КАТАЛОГ →
+          </NuxtLink>
         </div>
       </div>
     </div>

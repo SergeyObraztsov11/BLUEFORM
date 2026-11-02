@@ -187,21 +187,26 @@ watch(() => props.mode, resetDetails);
   <UiModalShell
     :visible="visible"
     :labelled-by="`auth-title-${mode}`"
-    panel-class="shop-modal my-auto w-full max-w-[470px] bg-white"
+    panel-class="shop-modal my-auto w-full min-w-0 max-w-[min(470px,100%)] bg-white"
     @close="emit('close')"
     @opened="firstInput?.focus()"
     @after-leave="emit('after-leave')"
   >
-    <div class="flex items-start justify-between gap-4 bg-cobalt px-6 py-5 text-white sm:px-8 sm:py-6">
-      <div>
-        <p class="type-label text-white/80">BLUEFORM / ЛИЧНЫЙ КАБИНЕТ</p>
-        <h2 :id="`auth-title-${mode}`" class="type-heading mt-3 text-[clamp(1.9rem,6vw,2.5rem)]">
+    <div
+      class="flex items-start justify-between gap-3 bg-cobalt px-4 py-5 text-white sm:gap-4 sm:px-8 sm:py-6"
+    >
+      <div class="min-w-0 flex-1">
+        <p class="type-label text-white/80">ЛИЧНЫЙ КАБИНЕТ</p>
+        <h2
+          :id="`auth-title-${mode}`"
+          class="type-heading mt-3 max-w-full text-[clamp(1.55rem,5.5vw,2.5rem)] leading-[1.08] [overflow-wrap:anywhere] [text-wrap:balance]"
+        >
           {{ mode === 'login' ? 'ВХОД' : step === 'code' ? 'КОД ИЗ ПИСЬМА' : 'РЕГИСТРАЦИЯ' }}
         </h2>
       </div>
       <button
         type="button"
-        class="-mr-2 -mt-2 flex size-10 shrink-0 items-center justify-center text-white transition-colors hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        class="-mr-1 -mt-2 flex size-10 shrink-0 items-center justify-center text-white transition-colors hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:-mr-2"
         aria-label="Закрыть окно"
         @click="emit('close')"
       >
@@ -209,7 +214,7 @@ watch(() => props.mode, resetDetails);
       </button>
     </div>
 
-    <div class="px-6 pb-7 pt-6 sm:px-8 sm:pb-8">
+    <div class="min-w-0 px-4 pb-7 pt-6 sm:px-8 sm:pb-8">
       <template v-if="step === 'details'">
         <p class="text-sm leading-6 text-ink/70">
           {{
@@ -218,8 +223,8 @@ watch(() => props.mode, resetDetails);
               : 'Регистрация в BLUEFORM. Следующий шаг — подтверждение почты.'
           }}
         </p>
-        <form class="mt-6 grid gap-4" @submit.prevent="submitDetails">
-          <label class="grid gap-2 text-sm font-medium text-ink">
+        <form class="mt-6 grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4" @submit.prevent="submitDetails">
+          <label class="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-2 text-sm font-medium text-ink">
             Электронная почта
             <input
               ref="firstInput"
@@ -230,13 +235,13 @@ watch(() => props.mode, resetDetails);
               required
               :disabled="submitting"
               placeholder="you@example.com"
-              class="h-12 w-full border border-seam bg-white px-4 font-normal outline-none transition-colors placeholder:text-ink/35 focus:border-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt disabled:cursor-wait disabled:bg-ice disabled:text-ink/50"
+              class="box-border h-12 w-full min-w-0 border border-seam bg-white px-3 font-normal outline-none transition-colors placeholder:text-ink/35 focus:border-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt disabled:cursor-wait disabled:bg-ice disabled:text-ink/50 sm:px-4"
             />
           </label>
-          <label class="grid gap-2 text-sm font-medium text-ink">
+          <label class="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-2 text-sm font-medium text-ink">
             Пароль
             <span
-              class="flex h-12 items-center border border-seam transition-colors focus-within:border-cobalt"
+              class="flex h-12 w-full min-w-0 items-center border border-seam transition-colors focus-within:border-cobalt"
             >
               <input
                 v-model="password"
@@ -247,7 +252,7 @@ watch(() => props.mode, resetDetails);
                 minlength="8"
                 :disabled="submitting"
                 :placeholder="mode === 'login' ? 'Ваш пароль' : 'Не менее 8 символов'"
-                class="min-w-0 flex-1 bg-transparent px-4 font-normal outline-none placeholder:text-ink/35 disabled:cursor-wait disabled:text-ink/50"
+                class="box-border h-full w-full min-w-0 flex-1 bg-transparent px-3 font-normal outline-none placeholder:text-ink/35 disabled:cursor-wait disabled:text-ink/50 sm:px-4"
               />
               <button
                 type="button"
@@ -261,17 +266,19 @@ watch(() => props.mode, resetDetails);
               </button>
             </span>
           </label>
-          <p v-if="error" class="text-sm text-error" role="alert">{{ error }}</p>
+          <p v-if="error" class="min-w-0 text-sm text-error [overflow-wrap:anywhere]" role="alert">
+            {{ error }}
+          </p>
           <button
             type="submit"
-            class="mt-2 h-12 bg-cobalt px-5 text-sm font-bold text-white transition-colors hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt disabled:cursor-wait disabled:bg-ink/40"
+            class="mt-2 box-border h-12 w-full min-w-0 bg-cobalt px-5 text-sm font-bold text-white transition-colors hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt disabled:cursor-wait disabled:bg-ink/40"
             :disabled="submitting"
             :aria-busy="submitting"
           >
             {{ detailsSubmitLabel }}
           </button>
         </form>
-        <div class="mt-6 border-t border-seam pt-5 text-sm text-ink/70">
+        <div class="mt-6 min-w-0 border-t border-seam pt-5 text-sm text-ink/70 [overflow-wrap:anywhere]">
           {{ mode === 'login' ? 'Нет аккаунта?' : 'Уже есть аккаунт?' }}
           <button
             type="button"
@@ -285,12 +292,13 @@ watch(() => props.mode, resetDetails);
       </template>
 
       <template v-else>
-        <p class="text-sm leading-6 text-ink/70">
-          Введите пятизначный код для <span class="font-semibold text-ink">{{ email }}</span>
+        <p class="min-w-0 text-sm leading-6 text-ink/70">
+          Введите пятизначный код для
+          <span class="font-semibold text-ink [overflow-wrap:anywhere]">{{ email }}</span>
         </p>
-        <form class="mt-6" @submit.prevent="submitCode">
+        <form class="mt-6 grid min-w-0 grid-cols-[minmax(0,1fr)] gap-0" @submit.prevent="submitCode">
           <div
-            class="flex justify-between gap-2"
+            class="flex min-w-0 justify-between gap-2"
             role="group"
             aria-label="Код подтверждения из письма"
             @paste="onCodePaste"
@@ -309,15 +317,17 @@ watch(() => props.mode, resetDetails);
               :autocomplete="index === 0 ? 'one-time-code' : 'off'"
               :disabled="submitting"
               :aria-label="`Цифра кода ${index + 1} из 5`"
-              class="h-14 min-w-0 w-full border border-seam bg-white text-center text-2xl font-semibold text-ink outline-none transition-colors focus:border-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt disabled:cursor-wait disabled:bg-ice disabled:text-ink/50 sm:h-16"
+              class="box-border h-14 w-full min-w-0 border border-seam bg-white text-center text-2xl font-semibold text-ink outline-none transition-colors focus:border-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt disabled:cursor-wait disabled:bg-ice disabled:text-ink/50 sm:h-16"
               @input="onCodeInput(index)"
               @keydown="onCodeKeydown($event, index)"
             />
           </div>
-          <p v-if="error" class="mt-4 text-sm text-error" role="alert">{{ error }}</p>
+          <p v-if="error" class="mt-4 min-w-0 text-sm text-error [overflow-wrap:anywhere]" role="alert">
+            {{ error }}
+          </p>
           <button
             type="submit"
-            class="mt-6 h-12 w-full bg-cobalt px-5 text-sm font-bold text-white transition-colors hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt disabled:cursor-wait disabled:bg-ink/40"
+            class="mt-6 box-border h-12 w-full min-w-0 bg-cobalt px-5 text-sm font-bold text-white transition-colors hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt disabled:cursor-wait disabled:bg-ink/40"
             :disabled="submitting"
             :aria-busy="submitting"
           >

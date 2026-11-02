@@ -6,8 +6,10 @@ defineProps<{
 </script>
 
 <template>
-  <div class="bg-cobalt px-6 py-8 text-white sm:px-8 sm:py-10 lg:px-10 lg:py-12">
-    <h1 class="type-heading text-[clamp(2.7rem,6vw,4.7rem)]">{{ title }}</h1>
-    <p v-if="lead" class="mt-4 max-w-[36rem] text-base leading-6 text-white/80">{{ lead }}</p>
+  <div class="shop-page-banner bg-cobalt px-4 py-6 text-white sm:px-8 sm:py-10 lg:px-10 lg:py-12">
+    <h1 class="shop-page-banner-title type-heading">{{ title }}</h1>
+    <p v-if="lead" class="mt-3 max-w-[36rem] text-sm leading-6 text-white/80 sm:mt-4 sm:text-base">
+      {{ lead }}
+    </p>
   </div>
 </template>

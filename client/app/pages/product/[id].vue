@@ -54,7 +54,7 @@ useHead(() => ({
 </script>
 
 <template>
-  <main class="min-h-[70vh] pt-5 md:pt-6">
+  <div class="min-h-[70vh] pt-5 md:pt-6">
     <p v-if="status === 'pending'" class="pb-24 pt-14 text-sm text-ink/65">Загружаем товар…</p>
     <template v-else-if="product">
       <ProductDetails :product="product" class="pb-16 md:pb-20" />
@@ -65,8 +65,11 @@ useHead(() => ({
       <button type="button" class="shop-button-primary mt-8" @click="refresh()">ПОВТОРИТЬ</button>
     </section>
     <section v-else class="pb-24">
-      <ShopPageBanner title="ТОВАР НЕ НАЙДЕН" lead="Возможно, ссылка устарела." />
+      <ShopPageBanner
+        title="ТОВАР НЕ НАЙДЕН"
+        lead="Возможно, ссылка устарела. Откройте каталог и выберите другую вещь."
+      />
       <NuxtLink to="/catalog" class="shop-button-primary mt-8">ПЕРЕЙТИ В КАТАЛОГ</NuxtLink>
     </section>
-  </main>
+  </div>
 </template>
