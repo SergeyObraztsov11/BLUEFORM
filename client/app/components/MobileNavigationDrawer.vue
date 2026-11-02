@@ -94,8 +94,20 @@ function isCurrentShopLink(to: string) {
   return !route.query.category;
 }
 
+/** Shared geometry; colors stay conditional so sale red never fights cobalt utilities. */
 const rowClass =
-  'flex min-h-[58px] w-full items-center justify-between gap-3 border-b border-seam px-1 text-left text-[17px] font-semibold leading-5 text-ink transition-colors hover:text-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt';
+  'flex min-h-[58px] w-full items-center justify-between gap-3 border-b px-1 text-left text-[17px] font-semibold leading-5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt';
+
+const rowToneClass = 'border-seam text-ink hover:text-cobalt';
+
+function shopLinkTone(link: (typeof shopLinks)[number], current: boolean) {
+  if ('sale' in link && link.sale) {
+    return current
+      ? 'border-sale text-sale underline underline-offset-4 hover:text-sale focus-visible:text-sale'
+      : 'border-seam text-sale hover:text-sale focus-visible:text-sale';
+  }
+  return current ? 'border-cobalt text-cobalt' : 'border-seam text-ink hover:text-cobalt';
+}
 
 function openSection(hash: string) {
   emit('close');
@@ -170,7 +182,7 @@ async function signOut() {
           <li v-if="!profile">
             <button
               type="button"
-              :class="[rowClass, 'group py-3']"
+              :class="[rowClass, rowToneClass, 'group py-3']"
               aria-label="Войти или зарегистрироваться"
               @click="emit('auth', 'login')"
             >
@@ -190,7 +202,7 @@ async function signOut() {
           <li v-for="item in accountLinks" :key="item.id">
             <NuxtLink
               :to="item.to"
-              :class="rowClass"
+              :class="[rowClass, rowToneClass]"
               :aria-current="route.path === item.to ? 'page' : undefined"
               :aria-label="item.count ? `${item.label}, ${item.count}` : undefined"
               @click="emit('close')"
@@ -219,12 +231,7 @@ async function signOut() {
           <li v-for="link in shopLinks" :key="link.to">
             <NuxtLink
               :to="link.to"
-              class="flex min-h-[58px] items-center justify-between gap-3 border-b px-1 text-[17px] font-semibold leading-5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
-              :class="
-                isCurrentShopLink(link.to)
-                  ? 'border-cobalt text-cobalt'
-                  : 'border-seam text-ink hover:text-cobalt'
-              "
+              :class="[rowClass, shopLinkTone(link, isCurrentShopLink(link.to))]"
               :aria-current="isCurrentShopLink(link.to) ? 'page' : undefined"
               @click="emit('close')"
             >

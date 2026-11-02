@@ -57,66 +57,80 @@ async function signOut() {
 
 <template>
   <section class="min-h-[70vh] pb-20 pt-6 md:pt-8">
-    <ShopPageHeader title="Профиль" />
-
-    <div v-if="account.profile" class="max-w-[720px]">
-      <form class="grid gap-5 sm:grid-cols-2" @input="saved = false" @submit.prevent="saveProfile">
-        <label class="flex flex-col gap-2 text-sm font-semibold text-ink">
-          Имя
-          <input
-            v-model.trim="form.firstName"
-            autocomplete="given-name"
-            maxlength="80"
-            class="h-12 border border-seam bg-white px-4 font-normal outline-none focus:border-cobalt focus:ring-1 focus:ring-cobalt"
-          />
-        </label>
-        <label class="flex flex-col gap-2 text-sm font-semibold text-ink">
-          Фамилия
-          <input
-            v-model.trim="form.lastName"
-            autocomplete="family-name"
-            maxlength="80"
-            class="h-12 border border-seam bg-white px-4 font-normal outline-none focus:border-cobalt focus:ring-1 focus:ring-cobalt"
-          />
-        </label>
-        <label class="flex flex-col gap-2 text-sm font-semibold text-ink">
-          Телефон
-          <input
-            v-model.trim="form.phone"
-            type="tel"
-            autocomplete="tel"
-            maxlength="32"
-            placeholder="+7"
-            class="h-12 border border-seam bg-white px-4 font-normal outline-none focus:border-cobalt focus:ring-1 focus:ring-cobalt"
-          />
-        </label>
-        <div class="flex flex-col gap-2 text-sm font-semibold text-ink">
-          <span>Электронная почта</span>
-          <p class="flex min-h-12 items-center break-all font-normal text-ink/70">
-            {{ account.profile.email }}
+    <ShopPageHeader title="Профиль">
+      <template #actions>
+        <div class="flex flex-col items-start gap-1 sm:items-end">
+          <button
+            type="button"
+            class="inline-flex min-h-11 items-center text-sm font-medium text-ink/55 transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt disabled:cursor-wait disabled:text-ink/30"
+            :disabled="leaving"
+            :aria-busy="leaving"
+            @click="signOut"
+          >
+            {{ leaving ? 'Выходим…' : 'Выйти из аккаунта' }}
+          </button>
+          <p v-if="signOutError" class="max-w-[280px] text-sm text-error sm:text-right" role="alert">
+            {{ signOutError }}
           </p>
         </div>
-        <div class="sm:col-span-2">
-          <p v-if="error" class="mb-4 text-sm text-error" role="alert">{{ error }}</p>
-          <p v-if="saved" class="mb-4 text-sm text-cobalt" role="status">Данные сохранены.</p>
-          <button type="submit" class="shop-button-primary w-full sm:w-auto" :disabled="saving">
-            {{ saving ? 'Сохраняем…' : 'Сохранить изменения' }}
-          </button>
-        </div>
-      </form>
+      </template>
+    </ShopPageHeader>
 
-      <div class="mt-8 flex flex-wrap items-center gap-3">
-        <button
-          type="button"
-          class="shop-button-secondary"
-          :disabled="leaving"
-          :aria-busy="leaving"
-          @click="signOut"
-        >
-          {{ leaving ? 'Выходим…' : 'Выйти из аккаунта' }}
-        </button>
-        <p v-if="signOutError" class="text-sm text-error" role="alert">{{ signOutError }}</p>
+    <div v-if="account.profile" class="grid border border-seam lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
+      <div class="bg-ice/30 p-5 md:p-8">
+        <h2 class="text-[20px] font-semibold text-ink">Личные данные</h2>
+        <form class="mt-5 grid gap-5 sm:grid-cols-2" @input="saved = false" @submit.prevent="saveProfile">
+          <label class="flex flex-col gap-2 text-sm font-semibold text-ink">
+            Имя
+            <input
+              v-model.trim="form.firstName"
+              autocomplete="given-name"
+              maxlength="80"
+              class="h-12 border border-seam bg-white px-4 font-normal outline-none focus:border-cobalt focus:ring-1 focus:ring-cobalt"
+            />
+          </label>
+          <label class="flex flex-col gap-2 text-sm font-semibold text-ink">
+            Фамилия
+            <input
+              v-model.trim="form.lastName"
+              autocomplete="family-name"
+              maxlength="80"
+              class="h-12 border border-seam bg-white px-4 font-normal outline-none focus:border-cobalt focus:ring-1 focus:ring-cobalt"
+            />
+          </label>
+          <label class="flex flex-col gap-2 text-sm font-semibold text-ink">
+            Телефон
+            <input
+              v-model.trim="form.phone"
+              type="tel"
+              autocomplete="tel"
+              maxlength="32"
+              placeholder="+7"
+              class="h-12 border border-seam bg-white px-4 font-normal outline-none focus:border-cobalt focus:ring-1 focus:ring-cobalt"
+            />
+          </label>
+          <div class="flex flex-col gap-2 text-sm font-semibold text-ink">
+            <span>Электронная почта</span>
+            <p class="flex min-h-12 items-center break-all px-4 font-normal text-ink/70">
+              {{ account.profile.email }}
+            </p>
+          </div>
+          <div class="sm:col-span-2">
+            <p v-if="error" class="mb-4 text-sm text-error" role="alert">{{ error }}</p>
+            <p v-if="saved" class="mb-4 text-sm text-cobalt" role="status">Данные сохранены.</p>
+            <button type="submit" class="shop-button-primary w-full sm:w-auto" :disabled="saving">
+              {{ saving ? 'Сохраняем…' : 'Сохранить изменения' }}
+            </button>
+          </div>
+        </form>
       </div>
+
+      <aside
+        class="border-t border-seam bg-white p-5 md:p-8 lg:border-l lg:border-t-0"
+        aria-label="Последний заказ"
+      >
+        <ProfileLatestOrder />
+      </aside>
     </div>
   </section>
 </template>
