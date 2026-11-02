@@ -21,7 +21,7 @@ const isAuthenticated = computed(() => account.isAuthenticated);
 
 <template>
   <nav
-    class="fixed inset-x-0 bottom-0 z-40 border-t border-seam bg-white shadow-[0_-8px_24px_rgba(16,43,78,0.06)] lg:hidden"
+    class="fixed inset-x-0 bottom-0 z-40 border-t border-seam bg-white shadow-[0_-8px_24px_rgba(16,43,78,0.06)] xl:hidden"
     aria-label="Разделы магазина"
   >
     <div class="mx-auto grid max-w-[1280px] grid-cols-4 pb-[env(safe-area-inset-bottom)]">

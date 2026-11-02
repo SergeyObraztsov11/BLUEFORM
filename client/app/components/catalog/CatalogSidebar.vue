@@ -13,6 +13,17 @@ const audiences = computed(() => items.value.filter((item) => item.parent === nu
 const groupsFor = (parent: string) => items.value.filter((item) => item.parent === parent);
 const hasChildren = (slug: string) => items.value.some((item) => item.parent === slug);
 
+/** Inset ring via box-shadow — visible on cobalt fill and not clipped by overflow-hidden branches. */
+function categoryButtonClass(isSelected: boolean, base: string, unselectedText = 'text-ink') {
+  return [
+    base,
+    'transition-colors focus-visible:outline-none',
+    isSelected
+      ? 'bg-cobalt text-white hover:bg-cobalt hover:text-white focus-visible:shadow-[inset_0_0_0_2px_#fff]'
+      : `${unselectedText} hover:text-cobalt focus-visible:shadow-[inset_0_0_0_2px_#0758c9]`,
+  ];
+}
+
 function expandSelected(slug: string) {
   if (slug === 'all') return;
   const branch = categoryBranchFrom(items.value, slug);
@@ -29,8 +40,12 @@ watch(selected, (slug) => expandSelected(slug));
     <h2 class="type-label mb-4 text-cobalt">КАТЕГОРИИ</h2>
     <button
       type="button"
-      class="w-full border-b border-seam px-3 py-3 text-left text-sm font-medium transition-colors hover:text-cobalt"
-      :class="selected === 'all' ? 'bg-ink text-white hover:text-white' : 'text-ink'"
+      :class="
+        categoryButtonClass(
+          selected === 'all',
+          'w-full border-b border-seam px-3 py-3 text-left text-sm font-medium',
+        )
+      "
       :aria-current="selected === 'all' ? 'page' : undefined"
       @click="selected = 'all'"
     >
@@ -40,8 +55,12 @@ watch(selected, (slug) => expandSelected(slug));
       <div class="flex border-b border-seam">
         <button
           type="button"
-          class="min-w-0 flex-1 px-3 py-3 text-left text-sm font-semibold transition-colors hover:text-cobalt"
-          :class="selected === audience.slug ? 'text-cobalt' : 'text-ink'"
+          :class="
+            categoryButtonClass(
+              selected === audience.slug,
+              'min-w-0 flex-1 px-3 py-3 text-left text-sm font-semibold',
+            )
+          "
           :aria-current="selected === audience.slug ? 'page' : undefined"
           @click="
             selected = audience.slug;
@@ -53,7 +72,7 @@ watch(selected, (slug) => expandSelected(slug));
         </button>
         <button
           type="button"
-          class="flex w-9 items-center justify-center text-ink/60 hover:text-cobalt"
+          class="flex w-9 items-center justify-center text-ink/60 hover:text-cobalt focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-cobalt"
           :aria-label="`Показать категории: ${audience.name}`"
           :aria-expanded="expandedAudience === audience.slug"
           @click="expandedAudience = expandedAudience === audience.slug ? null : audience.slug"
@@ -78,8 +97,13 @@ watch(selected, (slug) => expandSelected(slug));
             <div class="flex">
               <button
                 type="button"
-                class="min-w-0 flex-1 px-3 py-2.5 text-left text-[13px] font-medium transition-colors hover:text-cobalt"
-                :class="selected === group.slug ? 'text-cobalt' : 'text-ink/80'"
+                :class="
+                  categoryButtonClass(
+                    selected === group.slug,
+                    'min-w-0 flex-1 px-3 py-2.5 text-left text-[13px] font-medium',
+                    'text-ink/80',
+                  )
+                "
                 :aria-current="selected === group.slug ? 'page' : undefined"
                 @click="
                   selected = group.slug;
@@ -91,7 +115,7 @@ watch(selected, (slug) => expandSelected(slug));
               <button
                 v-if="hasChildren(group.slug)"
                 type="button"
-                class="flex w-8 items-center justify-center text-ink/50 hover:text-cobalt"
+                class="flex w-8 items-center justify-center text-ink/50 hover:text-cobalt focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-cobalt"
                 :aria-label="`Показать фасоны: ${group.name}`"
                 :aria-expanded="expandedGroup === group.slug"
                 @click="expandedGroup = expandedGroup === group.slug ? null : group.slug"
@@ -117,8 +141,14 @@ watch(selected, (slug) => expandSelected(slug));
                   v-for="leaf in groupsFor(group.slug)"
                   :key="leaf.slug"
                   type="button"
-                  class="block w-full px-5 py-2 text-left text-[13px] transition-colors hover:text-cobalt"
-                  :class="selected === leaf.slug ? 'font-semibold text-cobalt' : 'text-ink/65'"
+                  :class="[
+                    categoryButtonClass(
+                      selected === leaf.slug,
+                      'block w-full px-5 py-2 text-left text-[13px]',
+                      'text-ink/65',
+                    ),
+                    selected === leaf.slug ? 'font-semibold' : '',
+                  ]"
                   :aria-current="selected === leaf.slug ? 'page' : undefined"
                   @click="selected = leaf.slug"
                 >

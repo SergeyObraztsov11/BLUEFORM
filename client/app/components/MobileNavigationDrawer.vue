@@ -120,7 +120,7 @@ async function signOut() {
     :visible="visible"
     labelled-by="mobile-navigation-title"
     placement="right"
-    panel-class="shop-modal flex h-dvh w-[min(400px,calc(100vw-28px))] flex-col bg-white lg:hidden"
+    panel-class="shop-modal flex h-dvh w-[min(400px,calc(100vw-28px))] flex-col bg-white xl:hidden"
     @close="emit('close')"
     @opened="closeButton?.focus({ preventScroll: true })"
   >
@@ -242,15 +242,6 @@ async function signOut() {
               @click.prevent="openSection('#top')"
             >
               Главная <ArrowForward :size="19" class="shrink-0" aria-hidden="true" />
-            </a>
-          </li>
-          <li>
-            <a
-              href="/#denim-palette"
-              class="flex min-h-[52px] items-center justify-between gap-3 border-b border-seam px-1 text-[15px] font-medium text-ink transition-colors hover:text-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
-              @click.prevent="openSection('#denim-palette')"
-            >
-              Палитра тканей <ArrowForward :size="19" class="shrink-0" aria-hidden="true" />
             </a>
           </li>
         </ul>

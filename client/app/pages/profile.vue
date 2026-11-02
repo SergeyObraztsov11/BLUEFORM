@@ -39,23 +39,12 @@ async function saveProfile() {
 </script>
 
 <template>
-  <section class="min-h-[70vh] pb-20 pt-5 md:pt-6">
-    <ShopPageBanner
-      title="МОЙ ПРОФИЛЬ"
-      lead="Имя, телефон и быстрые ссылки на заказы, избранное и настройки."
-    />
+  <section class="min-h-[70vh] pb-20 pt-6 md:pt-8">
+    <ShopPageHeader title="Профиль" />
 
-    <div class="mt-8 grid items-start gap-8 lg:mt-12 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-12">
+    <div class="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-12">
       <div class="min-w-0">
-        <div class="border-t-2 border-ink pt-6">
-          <p class="type-label text-cobalt">ВАШИ ДАННЫЕ</p>
-          <h2 class="mt-3 text-2xl font-bold tracking-tight text-ink sm:text-3xl">Личная информация</h2>
-          <p class="mt-3 max-w-lg text-sm leading-6 text-ink/65">
-            Эти данные помогут быстрее оформить следующий заказ.
-          </p>
-        </div>
-
-        <form v-if="account.profile" class="mt-8 grid gap-5 sm:grid-cols-2" @submit.prevent="saveProfile">
+        <form v-if="account.profile" class="grid gap-5 sm:grid-cols-2" @submit.prevent="saveProfile">
           <label class="flex flex-col gap-2 text-sm font-semibold text-ink">
             Имя
             <input

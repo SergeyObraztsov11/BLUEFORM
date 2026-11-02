@@ -160,53 +160,26 @@ useHead({ title: 'Оформление заказа — BLUEFORM', meta: [{ name
 </script>
 
 <template>
-  <section class="min-h-[70vh] pb-20 pt-5 md:pt-6">
-    <ShopPageBanner
-      title="ОФОРМЛЕНИЕ ЗАКАЗА"
-      lead="Проверь размеры, количество и контакты — заказ уйдёт в работу без списания средств."
-    />
+  <section class="min-h-[70vh] pb-20 pt-6 md:pt-8">
+    <ShopPageHeader title="Оформление заказа" />
 
     <div
-      class="mt-8 grid items-start gap-8 lg:mt-12 lg:gap-12"
+      class="grid items-start gap-8 lg:gap-12"
       :class="cartIsEmpty && !createdOrder ? 'lg:grid-cols-1' : 'lg:grid-cols-[minmax(0,1fr)_320px]'"
     >
       <div class="min-w-0">
-        <div class="border-t-2 border-ink pt-6">
-          <p class="type-label text-cobalt">
-            {{ createdOrder ? 'ГОТОВО' : 'ШАГ ОФОРМЛЕНИЯ' }}
-          </p>
-          <h2 class="mt-3 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
-            {{
-              createdOrder
-                ? 'Заказ создан'
-                : cartIsEmpty
-                  ? 'Корзина пуста'
-                  : !account.isAuthenticated
-                    ? 'Войдите, чтобы продолжить'
-                    : 'Данные для оформления'
-            }}
-          </h2>
-          <p v-if="!createdOrder && !cartIsEmpty" class="mt-3 max-w-lg text-sm leading-6 text-ink/65">
-            Доставка по России бесплатная — способ доставки уточняется вручную после оформления.
-          </p>
-        </div>
-
-        <div
-          v-if="cartBooting || (!cart.loaded && !cartBootError)"
-          class="mt-8"
-          role="status"
-          aria-live="polite"
-        >
+        <div v-if="cartBooting || (!cart.loaded && !cartBootError)" role="status" aria-live="polite">
           <p class="text-sm text-ink/60">Загружаем корзину…</p>
         </div>
 
-        <div v-else-if="cartBootError" class="mt-8 max-w-[640px]">
+        <div v-else-if="cartBootError" class="max-w-[640px]">
           <p class="text-sm text-error" role="alert">{{ cartBootError }}</p>
           <button type="button" class="shop-button-primary mt-6" @click="ensureCartLoaded">ПОВТОРИТЬ</button>
         </div>
 
-        <div v-else-if="createdOrder" class="mt-8 max-w-[640px]">
-          <p class="text-sm leading-6 text-ink/70">
+        <div v-else-if="createdOrder" class="max-w-[640px]">
+          <h2 class="text-xl font-bold text-ink">Заказ создан</h2>
+          <p class="mt-3 text-sm leading-6 text-ink/70">
             Номер заказа
             <span class="font-semibold text-ink">{{ createdOrder.id.slice(-8).toUpperCase() }}</span
             >. Статус: <span class="font-semibold text-ink">{{ createdOrder.statusLabel }}</span
@@ -233,24 +206,14 @@ useHead({ title: 'Оформление заказа — BLUEFORM', meta: [{ name
           </div>
         </div>
 
-        <div v-else-if="cartIsEmpty" class="mt-8 max-w-[480px] py-6 text-center sm:mx-auto sm:py-10">
-          <p class="text-sm leading-6 text-ink/65">
-            Добавьте вещи из каталога, чтобы оформить заказ. Форма оформления появится, когда в корзине будут
-            доступные товары.
-          </p>
-          <div class="mt-6 flex flex-wrap justify-center gap-3">
-            <NuxtLink to="/catalog" class="shop-button-primary">ПЕРЕЙТИ В КАТАЛОГ</NuxtLink>
-            <NuxtLink
-              to="/cart"
-              class="inline-flex h-12 items-center px-5 text-sm font-bold text-cobalt hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
-            >
-              Открыть корзину
-            </NuxtLink>
-          </div>
+        <div v-else-if="cartIsEmpty" class="py-10 text-center sm:py-12">
+          <p class="text-base font-semibold text-ink">Корзина пуста</p>
+          <NuxtLink to="/catalog" class="shop-button-primary mt-5">В каталог</NuxtLink>
         </div>
 
-        <div v-else-if="!account.isAuthenticated" class="mt-8 max-w-[640px]">
-          <p class="text-sm leading-6 text-ink/70">
+        <div v-else-if="!account.isAuthenticated" class="max-w-[640px]">
+          <h2 class="text-xl font-bold text-ink">Войдите, чтобы продолжить</h2>
+          <p class="mt-3 text-sm leading-6 text-ink/70">
             Чтобы оформить заказ, войдите или зарегистрируйтесь. Товары в корзине сохранятся.
           </p>
           <div class="mt-6 flex flex-wrap gap-3">
@@ -267,11 +230,7 @@ useHead({ title: 'Оформление заказа — BLUEFORM', meta: [{ name
           </NuxtLink>
         </div>
 
-        <form
-          v-else-if="showCheckoutForm"
-          class="mt-8 grid gap-5 sm:grid-cols-2"
-          @submit.prevent="submitOrder"
-        >
+        <form v-else-if="showCheckoutForm" class="grid gap-5 sm:grid-cols-2" @submit.prevent="submitOrder">
           <label class="flex flex-col gap-2 text-sm font-semibold text-ink">
             Имя
             <input

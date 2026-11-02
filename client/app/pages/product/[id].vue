@@ -54,22 +54,22 @@ useHead(() => ({
 </script>
 
 <template>
-  <div class="min-h-[70vh] pt-5 md:pt-6">
+  <div class="min-h-[70vh] pt-6 md:pt-8">
     <p v-if="status === 'pending'" class="pb-24 pt-14 text-sm text-ink/65">Загружаем товар…</p>
     <template v-else-if="product">
       <ProductDetails :product="product" class="pb-16 md:pb-20" />
       <ProductRelated :products="relatedProducts ?? []" />
     </template>
     <section v-else-if="status === 'error'" class="pb-24">
-      <ShopPageBanner title="НЕ УДАЛОСЬ ЗАГРУЗИТЬ" :lead="loadErrorMessage" />
-      <button type="button" class="shop-button-primary mt-8" @click="refresh()">ПОВТОРИТЬ</button>
+      <ShopPageHeader title="Не удалось загрузить" :description="loadErrorMessage" />
+      <button type="button" class="shop-button-primary" @click="refresh()">ПОВТОРИТЬ</button>
     </section>
     <section v-else class="pb-24">
-      <ShopPageBanner
-        title="ТОВАР НЕ НАЙДЕН"
-        lead="Возможно, ссылка устарела. Откройте каталог и выберите другую вещь."
+      <ShopPageHeader
+        title="Товар не найден"
+        description="Возможно, ссылка устарела. Откройте каталог и выберите другую вещь."
       />
-      <NuxtLink to="/catalog" class="shop-button-primary mt-8">ПЕРЕЙТИ В КАТАЛОГ</NuxtLink>
+      <NuxtLink to="/catalog" class="shop-button-primary">В каталог</NuxtLink>
     </section>
   </div>
 </template>

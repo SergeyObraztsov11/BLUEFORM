@@ -21,7 +21,6 @@ const tooMany = computed(() => props.quantity > maxQuantity.value);
 const atMaxQuantity = computed(() => !unavailable.value && props.quantity >= maxQuantity.value);
 const canDecrease = computed(() => !unavailable.value && props.quantity > 1);
 const canIncrease = computed(() => !unavailable.value && props.quantity < maxQuantity.value);
-const lowStock = computed(() => stockLeft.value > 0 && stockLeft.value <= 10);
 const canChangeSize = computed(() =>
   props.item.sizes.some((size) => size.stock > 0 && size.code !== props.size),
 );
@@ -117,9 +116,6 @@ function setQuantity(next: number) {
       </p>
       <p v-else-if="unavailable" class="text-xs font-semibold leading-4 text-error" role="status">
         Нет в наличии для выбранного размера
-      </p>
-      <p v-else-if="lowStock" class="text-xs font-semibold leading-4 text-sale">
-        Осталось {{ stockLeft }} шт.
       </p>
     </div>
     <div class="col-span-2 flex flex-wrap items-end gap-3 sm:col-span-1 sm:col-start-2 sm:gap-4">

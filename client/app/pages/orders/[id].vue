@@ -75,24 +75,21 @@ watch(orderId, () => {
 </script>
 
 <template>
-  <section class="min-h-[70vh] pb-20 pt-5 md:pt-6">
-    <ShopPageBanner
-      :title="order ? `ЗАКАЗ № ${shortId}` : 'ЗАКАЗ'"
-      lead="Состав, доставка и текущий статус."
-    />
+  <section class="min-h-[70vh] pb-20 pt-6 md:pt-8">
+    <ShopPageHeader :title="order ? `Заказ № ${shortId}` : 'Заказ'" />
 
     <NuxtLink
       to="/orders"
-      class="mt-6 inline-flex text-sm font-semibold text-cobalt hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
+      class="mb-6 inline-flex text-sm font-semibold text-cobalt hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
     >
       ← Все заказы
     </NuxtLink>
 
-    <div v-if="loading" class="mt-10" role="status" aria-live="polite">
+    <div v-if="loading" role="status" aria-live="polite">
       <p class="text-sm text-ink/60">Загружаем заказ…</p>
     </div>
 
-    <div v-else-if="error" class="mt-10 max-w-[640px]">
+    <div v-else-if="error" class="max-w-[640px]">
       <p class="text-sm text-error" role="alert">{{ error }}</p>
       <div class="mt-6 flex flex-wrap gap-3">
         <button type="button" class="shop-button-primary" @click="loadOrder">ПОВТОРИТЬ</button>
@@ -105,25 +102,19 @@ watch(orderId, () => {
       </div>
     </div>
 
-    <div
-      v-else-if="order"
-      class="mt-8 grid items-start gap-8 lg:mt-10 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-12"
-    >
+    <div v-else-if="order" class="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-12">
       <div class="min-w-0">
-        <div class="border-t-2 border-ink pt-6">
-          <div class="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <p class="type-label text-cobalt">СТАТУС</p>
-              <h2 class="mt-3 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
-                {{ order.statusLabel }}
-              </h2>
-              <p class="mt-2 text-sm text-ink/60">{{ formatWhen(order.createdAt) }}</p>
-            </div>
-            <p class="max-w-[16rem] text-sm leading-5 text-ink/60">Оплата условная · деньги не списаны</p>
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 class="text-xl font-bold tracking-tight text-ink sm:text-2xl">
+              {{ order.statusLabel }}
+            </h2>
+            <p class="mt-2 text-sm text-ink/60">{{ formatWhen(order.createdAt) }}</p>
           </div>
+          <p class="max-w-[16rem] text-sm leading-5 text-ink/60">Оплата условная · деньги не списаны</p>
         </div>
 
-        <h3 class="mt-10 text-lg font-bold text-ink">Состав</h3>
+        <h3 class="mt-8 text-lg font-bold text-ink">Состав</h3>
         <ul class="mt-4 divide-y divide-seam border-y border-seam">
           <li v-for="(line, index) in order.lines" :key="index" class="flex justify-between gap-4 py-4">
             <div class="min-w-0">
