@@ -133,13 +133,10 @@ useHead({
 </script>
 
 <template>
-  <section class="pb-16 pt-5 md:pb-24 md:pt-6">
-    <ShopPageBanner
-      :title="filters.sale ? 'ТОВАРЫ СО СКИДКОЙ' : 'КАТАЛОГ'"
-      lead="Джинсы, шорты, юбки, комбинезоны и куртки из денима. Выбирай свою форму и цвет."
-    />
+  <section class="pb-16 pt-6 md:pb-24 md:pt-8">
+    <ShopPageHeader :title="filters.sale ? 'Товары со скидкой' : 'Каталог'" />
 
-    <div class="mt-8 grid gap-8 lg:grid-cols-[190px_minmax(0,1fr)] lg:gap-10">
+    <div class="grid gap-8 lg:grid-cols-[190px_minmax(0,1fr)] lg:gap-10">
       <CatalogSidebar v-model="categoryModel" />
       <div class="min-w-0">
         <p v-if="catalogStatus === 'pending' && !products.length" class="mb-4 text-sm text-ink/65">

@@ -33,18 +33,18 @@ async function retryLoad() {
 </script>
 
 <template>
-  <section class="min-h-[70vh] pb-20 pt-5 md:pt-6">
-    <ShopPageBanner title="УВЕДОМЛЕНИЯ" lead="Заказы, регистрация и изменения статуса появятся здесь." />
+  <section class="min-h-[70vh] pb-20 pt-6 md:pt-8">
+    <ShopPageHeader title="Уведомления" />
 
-    <p v-if="showLoading" class="mt-10 text-sm text-ink/60">Загружаем уведомления…</p>
+    <p v-if="showLoading" class="text-sm text-ink/60">Загружаем уведомления…</p>
 
-    <div v-else-if="notifications.error" class="mt-10">
+    <div v-else-if="notifications.error">
       <p class="text-sm text-error" role="alert">{{ notifications.error }}</p>
       <button type="button" class="shop-button-primary mt-6" @click="retryLoad">ПОВТОРИТЬ</button>
     </div>
 
     <template v-else>
-      <div class="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-seam pt-6">
+      <div v-if="notifications.items.length" class="flex flex-wrap items-center justify-between gap-3">
         <p class="text-sm text-ink/65">
           {{
             notifications.unreadCount
@@ -62,7 +62,7 @@ async function retryLoad() {
         </button>
       </div>
 
-      <ul v-if="notifications.items.length" class="mt-4 divide-y divide-seam border-b border-seam">
+      <ul v-if="notifications.items.length" class="mt-4 divide-y divide-seam border-y border-seam">
         <li v-for="item in notifications.items" :key="item.id">
           <button
             type="button"
@@ -83,10 +83,9 @@ async function retryLoad() {
         </li>
       </ul>
 
-      <div v-else class="mt-10 py-12 text-center">
-        <p class="text-lg font-semibold text-ink">Пока нет уведомлений</p>
-        <p class="mt-2 text-sm text-ink/60">Они появятся после регистрации и оформления заказа.</p>
-        <NuxtLink to="/catalog" class="shop-button-primary mt-6">ПОСМОТРЕТЬ КАТАЛОГ</NuxtLink>
+      <div v-else class="py-10 text-center sm:py-12">
+        <p class="text-base font-semibold text-ink">Пока нет уведомлений</p>
+        <NuxtLink to="/catalog" class="shop-button-primary mt-5">В каталог</NuxtLink>
       </div>
     </template>
   </section>

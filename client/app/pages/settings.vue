@@ -68,12 +68,10 @@ useHead({ title: 'Настройки — BLUEFORM', meta: [{ name: 'robots', con
 </script>
 
 <template>
-  <section class="min-h-[70vh] pb-20 pt-5 md:pt-6">
-    <ShopPageBanner title="НАСТРОЙКИ" lead="Параметры сайта, кабинет и выход." />
+  <section class="min-h-[70vh] pb-20 pt-6 md:pt-8">
+    <ShopPageHeader title="Настройки" />
 
-    <div
-      class="mt-8 grid items-start gap-8 lg:mt-10 lg:max-w-[760px] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-10"
-    >
+    <div class="grid items-start gap-8 lg:max-w-[760px] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-10">
       <div class="min-w-0 space-y-8">
         <div v-if="account.profile" class="relative overflow-hidden border border-seam bg-ice p-5 sm:p-6">
           <span class="absolute inset-y-0 left-0 w-1 bg-cobalt" aria-hidden="true" />
@@ -99,12 +97,7 @@ useHead({ title: 'Настройки — BLUEFORM', meta: [{ name: 'robots', con
         </div>
 
         <section aria-labelledby="site-params-title">
-          <h2
-            id="site-params-title"
-            class="border-t-2 border-ink pt-5 text-lg font-bold tracking-tight text-ink sm:pt-6"
-          >
-            Параметры сайта
-          </h2>
+          <h2 id="site-params-title" class="text-lg font-bold tracking-tight text-ink">Параметры сайта</h2>
           <ul class="mt-4 border-t border-seam" aria-label="Параметры сайта">
             <li class="flex items-center gap-3 border-b border-seam py-3.5">
               <span
@@ -136,12 +129,7 @@ useHead({ title: 'Настройки — BLUEFORM', meta: [{ name: 'robots', con
 
       <div class="min-w-0 space-y-8">
         <section aria-labelledby="cabinet-links-title">
-          <h2
-            id="cabinet-links-title"
-            class="border-t-2 border-ink pt-5 text-lg font-bold tracking-tight text-ink sm:pt-6"
-          >
-            Кабинет
-          </h2>
+          <h2 id="cabinet-links-title" class="text-lg font-bold tracking-tight text-ink">Кабинет</h2>
           <nav class="mt-4 border-t border-seam" aria-label="Кабинет">
             <NuxtLink
               v-for="link in accountLinks"

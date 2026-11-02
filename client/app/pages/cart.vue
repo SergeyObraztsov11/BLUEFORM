@@ -3,5 +3,5 @@ useHead({ title: 'Корзина — BLUEFORM', meta: [{ name: 'robots', content
 </script>
 
 <template>
-  <DemoCollectionPage kind="cart" />
+  <ShopCollectionPage kind="cart" />
 </template>

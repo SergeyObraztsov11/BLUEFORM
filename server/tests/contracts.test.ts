@@ -44,7 +44,7 @@ test('current shop rejects anonymous order access and invalid catalogue input', 
 test('checkout loads while anonymous order creation requires a session', async () => {
   const response = await fetch(`${shop}/checkout`);
   assert.equal(response.status, 200);
-  assert.match(await response.text(), /ОФОРМЛЕНИЕ ЗАКАЗА/);
+  assert.match(await response.text(), /Оформление заказа/i);
   const order = await fetch(`${shop}/api/orders`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },

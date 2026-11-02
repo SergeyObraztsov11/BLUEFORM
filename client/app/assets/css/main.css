@@ -68,14 +68,33 @@
   letter-spacing: -0.02em;
 }
 
-/* Cobalt page hero for shop routes. Scales down on narrow phones; wraps long uppercase titles. */
-.shop-page-banner-title {
+/* Compact page title for shop routes (white background, sentence case). */
+.shop-page-header {
+  margin-bottom: 1.5rem;
+}
+.shop-page-header-title {
   max-width: 100%;
-  font-size: clamp(1.65rem, 0.55rem + 5.5vw, 4.7rem);
-  line-height: 1.06;
-  letter-spacing: -0.03em;
-  overflow-wrap: anywhere;
+  color: #102b4e;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
   text-wrap: balance;
+}
+.shop-page-header-description {
+  max-width: 36rem;
+  margin-top: 0.75rem;
+  color: rgb(16 43 78 / 0.7);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+@media (min-width: 768px) {
+  .shop-page-header {
+    margin-bottom: 2rem;
+  }
+  .shop-page-header-title {
+    font-size: 2.25rem;
+  }
 }
 
 /* Shared language for finished shop pages. Keep home campaign typography separate. */
@@ -86,23 +105,6 @@
   gap: 0.5rem;
   color: rgb(16 43 78 / 0.55);
   font-size: 0.75rem;
-}
-.shop-page-intro {
-  margin-top: 2.25rem;
-}
-.shop-page-title {
-  color: #102b4e;
-  font-size: clamp(2rem, 4.3vw, 3.75rem);
-  font-weight: 800;
-  line-height: 0.98;
-  letter-spacing: -0.025em;
-}
-.shop-page-description {
-  max-width: 41.25rem;
-  margin-top: 1.25rem;
-  color: rgb(16 43 78 / 0.7);
-  font-size: 0.875rem;
-  line-height: 1.6;
 }
 .shop-button-primary {
   display: inline-flex;
@@ -356,8 +358,5 @@ button {
   }
   html {
     scroll-padding-top: 64px;
-  }
-  .shop-page-intro {
-    margin-top: 2rem;
   }
 }

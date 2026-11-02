@@ -3,5 +3,5 @@ useHead({ title: 'Избранное — BLUEFORM', meta: [{ name: 'robots', con
 </script>
 
 <template>
-  <DemoCollectionPage kind="favorites" />
+  <ShopCollectionPage kind="favorites" />
 </template>

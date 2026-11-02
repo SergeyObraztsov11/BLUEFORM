@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useMediaQuery } from '@vueuse/core';
 import { computed, ref, watch } from 'vue';
 import { FavoriteW400 as Favorite } from '@material-symbols-svg/vue/sharp/icons/favorite';
 import { MenuW400 as Menu } from '@material-symbols-svg/vue/sharp/icons/menu';
@@ -43,13 +44,19 @@ const accountMenuLabel = computed(() => {
   return name ? `Меню аккаунта, ${name}` : `Меню аккаунта, ${profile.email}`;
 });
 
+const navLinkClass =
+  'px-1.5 py-3 text-[13px] font-semibold transition-colors hover:text-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt';
+
 const links = [
-  { label: 'ГЛАВНАЯ', href: '#top' },
-  { label: 'ЖЕНЩИНАМ', to: '/catalog?category=women' },
-  { label: 'МУЖЧИНАМ', to: '/catalog?category=men' },
-  { label: 'РАСПРОДАЖА', to: '/catalog?sale=1', sale: true },
-  { label: 'ТКАНИ', href: '#denim-palette' },
-];
+  { label: 'Главная', href: '#top' },
+  { label: 'Женщинам', to: '/catalog?category=women' },
+  { label: 'Мужчинам', to: '/catalog?category=men' },
+  { label: 'Распродажа', to: '/catalog?sale=1', sale: true },
+] as const;
+
+function isHomeCurrent() {
+  return route.path === '/';
+}
 
 function isCurrentCatalogLink(to: string) {
   if (route.path !== '/catalog') return false;
@@ -112,36 +119,41 @@ function onNotificationsOpen() {
 }
 
 watch(() => route.fullPath, closePanels);
+
+/** Matches Tailwind `xl` / desktop header. Listener cleanup via VueUse scope dispose. */
+const isDesktopNav = useMediaQuery('(min-width: 1280px)');
+watch(isDesktopNav, () => {
+  closePanels();
+});
 </script>
 
 <template>
   <header class="sticky top-0 z-40 bg-white">
-    <div class="flex h-16 items-center justify-between gap-3 md:h-[72px] lg:gap-5">
+    <div
+      class="grid h-16 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 md:h-[72px] xl:gap-5"
+    >
       <a
         href="/#top"
-        class="type-brand shrink-0 text-[21px] text-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt sm:text-[23px]"
+        class="type-brand justify-self-start text-[21px] text-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt sm:text-[23px]"
         aria-label="BLUEFORM — на главную"
         @click.prevent="navigate('#top')"
         >BLUEFORM</a
       >
 
-      <nav class="hidden items-center gap-4 lg:flex 2xl:gap-6" aria-label="Основная навигация">
+      <nav class="hidden items-center gap-5 xl:flex" aria-label="Основная навигация">
         <template v-for="link in links" :key="link.label">
           <a
-            v-if="link.href"
+            v-if="'href' in link && link.href"
             :href="`/${link.href}`"
-            class="type-label py-3 text-ink transition-colors hover:text-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
-            :aria-current="link.href === '#top' && route.path === '/' ? 'page' : undefined"
+            :class="[navLinkClass, isHomeCurrent() ? 'text-cobalt' : 'text-ink']"
+            :aria-current="isHomeCurrent() ? 'page' : undefined"
             @click.prevent="navigate(link.href)"
             >{{ link.label }}</a
           >
           <NuxtLink
-            v-else-if="link.to"
+            v-else-if="'to' in link && link.to"
             :to="link.to"
-            class="type-label border-b-2 py-3 transition-colors hover:text-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
-            :class="
-              isCurrentCatalogLink(link.to) ? 'border-cobalt text-cobalt' : 'border-transparent text-ink'
-            "
+            :class="[navLinkClass, isCurrentCatalogLink(link.to) ? 'text-cobalt' : 'text-ink']"
             :aria-current="isCurrentCatalogLink(link.to) ? 'page' : undefined"
             @click="closePanels"
             >{{ link.label }}</NuxtLink
@@ -149,7 +161,7 @@ watch(() => route.fullPath, closePanels);
         </template>
       </nav>
 
-      <div class="ml-auto hidden shrink-0 items-center gap-0.5 sm:gap-1 lg:flex">
+      <div class="hidden shrink-0 items-center justify-self-end gap-0.5 sm:gap-1 xl:flex">
         <NuxtLink
           to="/catalog"
           class="flex size-10 items-center justify-center text-ink transition-colors hover:text-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
@@ -216,7 +228,7 @@ watch(() => route.fullPath, closePanels);
           @open="onNotificationsOpen"
         />
 
-        <span class="mx-2 hidden h-5 w-px bg-seam lg:flex" aria-hidden="true" />
+        <span class="mx-2 hidden h-5 w-px bg-seam xl:flex" aria-hidden="true" />
         <UiPopover
           v-if="account.isAuthenticated"
           :open="accountMenuOpen"
@@ -241,45 +253,45 @@ watch(() => route.fullPath, closePanels);
         <template v-else>
           <button
             type="button"
-            class="type-label hidden px-2 py-3 text-ink transition-colors hover:text-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt lg:flex"
+            class="hidden px-2 py-3 text-[13px] font-semibold text-ink transition-colors hover:text-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt xl:flex"
             @click="openAuth('login')"
           >
-            ВОЙТИ
+            Войти
           </button>
           <button
             type="button"
-            class="type-label ml-2 hidden bg-cobalt px-4 py-3 text-white transition-colors hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt lg:flex"
+            class="ml-2 hidden bg-cobalt px-4 py-3 text-[13px] font-semibold text-white transition-colors hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt xl:flex"
             @click="openAuth('register')"
           >
-            РЕГИСТРАЦИЯ
+            Регистрация
           </button>
         </template>
       </div>
 
-      <HeaderNotifications
-        v-if="account.isAuthenticated"
-        :dismiss="dismissNotifications"
-        root-class="ml-auto inline-flex lg:hidden"
-        @open="onNotificationsOpen"
-      />
-
-      <button
-        type="button"
-        class="type-label flex items-center gap-1.5 py-3 text-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt lg:hidden"
-        :class="account.isAuthenticated ? '' : 'ml-auto'"
-        :aria-expanded="menuOpen"
-        aria-controls="mobile-navigation"
-        :aria-label="menuOpen ? 'Закрыть меню' : 'Открыть меню'"
-        @click="
-          menuOpen = !menuOpen;
-          activePreview = null;
-          accountMenuOpen = false;
-          dismissNotifications += 1;
-        "
-      >
-        <span>МЕНЮ</span>
-        <Menu :size="23" aria-hidden="true" />
-      </button>
+      <div class="col-start-3 flex items-center justify-self-end gap-1 xl:hidden">
+        <HeaderNotifications
+          v-if="account.isAuthenticated"
+          :dismiss="dismissNotifications"
+          root-class="inline-flex"
+          @open="onNotificationsOpen"
+        />
+        <button
+          type="button"
+          class="flex items-center gap-1.5 py-3 text-[13px] font-semibold text-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
+          :aria-expanded="menuOpen"
+          aria-controls="mobile-navigation"
+          :aria-label="menuOpen ? 'Закрыть меню' : 'Открыть меню'"
+          @click="
+            menuOpen = !menuOpen;
+            activePreview = null;
+            accountMenuOpen = false;
+            dismissNotifications += 1;
+          "
+        >
+          <span>Меню</span>
+          <Menu :size="23" aria-hidden="true" />
+        </button>
+      </div>
     </div>
 
     <MobileNavigationDrawer :visible="menuOpen" @close="menuOpen = false" @auth="openAuth" />
