@@ -1,52 +1,20 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import type { Component } from 'vue';
-import { CampaignW400 as Campaign } from '@material-symbols-svg/vue/sharp/icons/campaign';
-import { CreditCardW400 as CreditCard } from '@material-symbols-svg/vue/sharp/icons/credit-card';
 import { CurrencyRubleW400 as CurrencyRuble } from '@material-symbols-svg/vue/sharp/icons/currency-ruble';
-import { DevicesW400 as Devices } from '@material-symbols-svg/vue/sharp/icons/devices';
-import { DownloadW400 as Download } from '@material-symbols-svg/vue/sharp/icons/download';
 import { FavoriteW400 as Favorite } from '@material-symbols-svg/vue/sharp/icons/favorite';
 import { LanguageW400 as Language } from '@material-symbols-svg/vue/sharp/icons/language';
-import { LocationOnW400 as LocationOn } from '@material-symbols-svg/vue/sharp/icons/location-on';
-import { LockW400 as Lock } from '@material-symbols-svg/vue/sharp/icons/lock';
 import { LogoutW400 as Logout } from '@material-symbols-svg/vue/sharp/icons/logout';
-import { MailW400 as Mail } from '@material-symbols-svg/vue/sharp/icons/mail';
 import { NotificationsW400 as Notifications } from '@material-symbols-svg/vue/sharp/icons/notifications';
-import { PersonRemoveW400 as PersonRemove } from '@material-symbols-svg/vue/sharp/icons/person-remove';
-import { ShieldW400 as Shield } from '@material-symbols-svg/vue/sharp/icons/shield';
-import { StraightenW400 as Straighten } from '@material-symbols-svg/vue/sharp/icons/straighten';
-import { TuneW400 as Tune } from '@material-symbols-svg/vue/sharp/icons/tune';
+import { PersonW400 as Person } from '@material-symbols-svg/vue/sharp/icons/person';
+import { ReceiptLongW400 as ReceiptLong } from '@material-symbols-svg/vue/sharp/icons/receipt-long';
 import { useAccountStore } from '~/stores/account';
-
-type SettingsItem = {
-  id: string;
-  label: string;
-  detail?: string;
-  icon: Component;
-  value?: string;
-  available?: boolean;
-};
-
-type SettingsSection = {
-  id: string;
-  title: string;
-  items: SettingsItem[];
-};
+import { apiErrorMessage } from '~/utils/apiError';
 
 definePageMeta({ middleware: 'account' });
 
 const account = useAccountStore();
 const leaving = ref(false);
-const route = useRoute();
-const activeSection = ref(route.hash.slice(1) || 'security');
-
-watch(
-  () => route.hash,
-  (hash) => {
-    activeSection.value = hash.slice(1) || 'security';
-  },
-);
+const signOutError = ref('');
 
 watch(
   () => account.isAuthenticated,
@@ -76,109 +44,21 @@ const accountInitials = computed(() => {
   return (initials || profile.email.charAt(0)).slice(0, 2).toLocaleUpperCase('ru-RU');
 });
 
-const sections = computed<SettingsSection[]>(() => [
-  {
-    id: 'security',
-    title: 'Безопасность',
-    items: [
-      ...(account.profile
-        ? [
-            {
-              id: 'email',
-              label: 'Почта для входа',
-              icon: Mail,
-              value: account.profile.email,
-              available: true,
-            },
-          ]
-        : []),
-      { id: 'password', label: 'Смена пароля', icon: Lock },
-      { id: 'sessions', label: 'Активные устройства', icon: Devices },
-      { id: 'two-factor', label: 'Двухэтапная проверка', detail: 'Подтверждение входа кодом.', icon: Shield },
-    ],
-  },
-  {
-    id: 'shopping',
-    title: 'Покупки',
-    items: [
-      {
-        id: 'sizes',
-        label: 'Мои размеры',
-        detail: 'Размер будет подставляться в карточке товара.',
-        icon: Straighten,
-      },
-      {
-        id: 'addresses',
-        label: 'Адреса доставки',
-        detail: 'Адрес по умолчанию для оформления заказа.',
-        icon: LocationOn,
-      },
-      {
-        id: 'payment',
-        label: 'Способы оплаты',
-        detail: 'Быстрый выбор при оформлении заказа.',
-        icon: CreditCard,
-      },
-    ],
-  },
-  {
-    id: 'notifications',
-    title: 'Уведомления',
-    items: [
-      { id: 'orders', label: 'Статус заказа', detail: 'Письма об изменении статуса.', icon: Notifications },
-      {
-        id: 'new-items',
-        label: 'Новинки BLUEFORM',
-        detail: 'Новые модели и коллекции по почте.',
-        icon: Campaign,
-      },
-      {
-        id: 'favorites',
-        label: 'Избранные товары',
-        detail: 'Когда цена снизится или размер вернётся в продажу.',
-        icon: Favorite,
-      },
-    ],
-  },
-  {
-    id: 'interface',
-    title: 'Интерфейс',
-    items: [
-      { id: 'language', label: 'Язык сайта', icon: Language, value: 'Русский' },
-      { id: 'currency', label: 'Валюта', icon: CurrencyRuble, value: '₽ RUB' },
-    ],
-  },
-  {
-    id: 'privacy',
-    title: 'Приватность',
-    items: [
-      {
-        id: 'personalization',
-        label: 'Персонализация',
-        detail: 'Подборка моделей под ваши интересы.',
-        icon: Tune,
-      },
-      {
-        id: 'export',
-        label: 'Выгрузить данные',
-        detail: 'Копия сведений и истории покупок.',
-        icon: Download,
-      },
-      {
-        id: 'delete',
-        label: 'Удалить аккаунт',
-        detail: 'Удаление профиля и связанных данных.',
-        icon: PersonRemove,
-      },
-    ],
-  },
-]);
+const accountLinks = [
+  { to: '/profile', label: 'Профиль', icon: Person },
+  { to: '/orders', label: 'Заказы', icon: ReceiptLong },
+  { to: '/notifications', label: 'Уведомления', icon: Notifications },
+  { to: '/favorites', label: 'Избранное', icon: Favorite },
+] as const;
 
 async function signOut() {
   if (leaving.value) return;
   leaving.value = true;
+  signOutError.value = '';
   try {
     await account.signOut();
+  } catch (reason) {
+    signOutError.value = apiErrorMessage(reason);
   } finally {
     leaving.value = false;
   }
@@ -189,123 +69,107 @@ useHead({ title: 'Настройки — BLUEFORM', meta: [{ name: 'robots', con
 
 <template>
   <section class="min-h-[70vh] pb-20 pt-5 md:pt-6">
-    <ShopPageBanner title="НАСТРОЙКИ" lead="Безопасность, покупки, уведомления и интерфейс." />
+    <ShopPageBanner title="НАСТРОЙКИ" lead="Параметры сайта, кабинет и выход." />
 
-    <div v-if="account.profile" class="mt-8">
-      <div class="relative overflow-hidden border border-seam bg-ice p-5 sm:max-w-[360px] sm:p-6">
-        <span class="absolute inset-y-0 left-0 w-1 bg-cobalt" aria-hidden="true" />
-        <p class="type-label text-cobalt">ВАШ АККАУНТ</p>
-        <div class="mt-5 flex min-w-0 items-center gap-4">
-          <span
-            class="flex size-12 shrink-0 items-center justify-center bg-cobalt text-base font-bold text-white"
-            aria-hidden="true"
-            >{{ accountInitials }}</span
-          >
-          <div class="min-w-0">
-            <p class="truncate text-base font-bold leading-5 text-ink">{{ accountName }}</p>
-            <p v-if="accountName !== account.profile.email" class="mt-1 truncate text-xs text-ink/65">
-              {{ account.profile.email }}
-            </p>
+    <div
+      class="mt-8 grid items-start gap-8 lg:mt-10 lg:max-w-[760px] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-10"
+    >
+      <div class="min-w-0 space-y-8">
+        <div v-if="account.profile" class="relative overflow-hidden border border-seam bg-ice p-5 sm:p-6">
+          <span class="absolute inset-y-0 left-0 w-1 bg-cobalt" aria-hidden="true" />
+          <p class="type-label text-cobalt">АККАУНТ</p>
+          <div class="mt-4 flex min-w-0 items-center gap-4">
+            <span
+              class="flex size-12 shrink-0 items-center justify-center bg-cobalt text-base font-bold text-white"
+              aria-hidden="true"
+              >{{ accountInitials }}</span
+            >
+            <div class="min-w-0">
+              <p
+                class="text-base font-bold leading-5 text-ink"
+                :class="accountName === account.profile.email ? 'break-anywhere' : 'truncate'"
+              >
+                {{ accountName }}
+              </p>
+              <p v-if="accountName !== account.profile.email" class="mt-1 break-anywhere text-xs text-ink/65">
+                {{ account.profile.email }}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <div class="mt-8 grid items-start gap-8 lg:grid-cols-[190px_minmax(0,1fr)] lg:gap-10">
-      <nav class="hidden min-w-0 lg:sticky lg:top-24 lg:block" aria-label="Разделы настроек">
-        <h2 class="type-label mb-4 text-cobalt">РАЗДЕЛЫ</h2>
-        <div>
-          <a
-            v-for="section in sections"
-            :key="section.id"
-            :href="`#${section.id}`"
-            class="flex w-full border-b border-seam px-3 py-3 text-left text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
-            :class="
-              activeSection === section.id
-                ? 'bg-ink text-white hover:text-white'
-                : 'text-ink hover:text-cobalt'
-            "
-            :aria-current="activeSection === section.id ? 'location' : undefined"
-            @click="activeSection = section.id"
+        <section aria-labelledby="site-params-title">
+          <h2
+            id="site-params-title"
+            class="border-t-2 border-ink pt-5 text-lg font-bold tracking-tight text-ink sm:pt-6"
           >
-            {{ section.title }}
-          </a>
-        </div>
-      </nav>
-
-      <div class="min-w-0 space-y-10 md:space-y-12">
-        <section
-          v-for="section in sections"
-          :id="section.id"
-          :key="section.id"
-          class="scroll-mt-28 border-t border-seam pt-5 sm:pt-6"
-        >
-          <h2 class="text-[22px] font-bold leading-tight tracking-tight text-ink sm:text-[26px]">
-            {{ section.title }}
+            Параметры сайта
           </h2>
-
-          <ul class="mt-5 border-t border-seam">
-            <li
-              v-for="item in section.items"
-              :key="item.id"
-              class="grid grid-cols-[40px_minmax(0,1fr)] gap-3 border-b border-seam py-4 sm:grid-cols-[44px_minmax(0,1fr)_auto] sm:gap-4 sm:py-5"
-            >
+          <ul class="mt-4 border-t border-seam" aria-label="Параметры сайта">
+            <li class="flex items-center gap-3 border-b border-seam py-3.5">
               <span
-                class="flex size-10 items-center justify-center border sm:size-11"
-                :class="
-                  item.available
-                    ? 'border-cobalt/20 bg-ice text-cobalt'
-                    : 'border-seam bg-[#f7f9fc] text-ink/50'
-                "
+                class="flex size-10 shrink-0 items-center justify-center border border-cobalt/20 bg-ice text-cobalt"
                 aria-hidden="true"
               >
-                <component :is="item.icon" :size="21" />
+                <Language :size="20" />
               </span>
               <div class="min-w-0">
-                <h3
-                  class="text-[15px] font-semibold leading-5 sm:text-base"
-                  :class="item.available ? 'text-ink' : 'text-ink/65'"
-                >
-                  {{ item.label }}
-                </h3>
-                <p
-                  v-if="item.detail"
-                  class="mt-1 text-[13px] leading-5"
-                  :class="item.available ? 'text-ink/65' : 'text-ink/55'"
-                >
-                  {{ item.detail }}
-                </p>
-                <p
-                  v-if="item.value"
-                  class="mt-1.5 break-all text-[13px] font-semibold leading-5"
-                  :class="item.available ? 'text-ink' : 'text-ink/60'"
-                >
-                  {{ item.value }}
-                </p>
-                <span
-                  class="mt-2 inline-flex bg-ink/5 px-2 py-1 text-[10px] font-bold tracking-[0.06em] text-ink/60 sm:hidden"
-                  >{{ item.available ? 'УКАЗАНО' : 'СКОРО' }}</span
-                >
+                <p class="text-sm font-semibold text-ink">Язык</p>
+                <p class="mt-0.5 text-sm text-ink/70">Русский</p>
               </div>
+            </li>
+            <li class="flex items-center gap-3 border-b border-seam py-3.5">
               <span
-                class="hidden self-start whitespace-nowrap bg-ink/5 px-2.5 py-1.5 text-[10px] font-bold tracking-[0.06em] text-ink/60 sm:inline-flex"
-                >{{ item.available ? 'УКАЗАНО' : 'СКОРО' }}</span
+                class="flex size-10 shrink-0 items-center justify-center border border-cobalt/20 bg-ice text-cobalt"
+                aria-hidden="true"
               >
+                <CurrencyRuble :size="20" />
+              </span>
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-ink">Валюта</p>
+                <p class="mt-0.5 text-sm text-ink/70">₽ RUB</p>
+              </div>
             </li>
           </ul>
         </section>
+      </div>
 
-        <section class="border-t border-seam pt-5 sm:pt-6" aria-labelledby="session-title">
-          <div
-            class="flex flex-col gap-5 bg-ice p-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:p-6"
+      <div class="min-w-0 space-y-8">
+        <section aria-labelledby="cabinet-links-title">
+          <h2
+            id="cabinet-links-title"
+            class="border-t-2 border-ink pt-5 text-lg font-bold tracking-tight text-ink sm:pt-6"
           >
-            <div>
-              <h2 id="session-title" class="text-lg font-bold text-ink">Выйти из аккаунта</h2>
-            </div>
+            Кабинет
+          </h2>
+          <nav class="mt-4 border-t border-seam" aria-label="Кабинет">
+            <NuxtLink
+              v-for="link in accountLinks"
+              :key="link.to"
+              :to="link.to"
+              class="flex min-h-12 items-center gap-3 border-b border-seam py-3.5 text-sm font-semibold text-ink transition-colors hover:text-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
+            >
+              <span
+                class="flex size-10 shrink-0 items-center justify-center border border-cobalt/20 bg-ice text-cobalt"
+                aria-hidden="true"
+              >
+                <component :is="link.icon" :size="20" />
+              </span>
+              {{ link.label }}
+            </NuxtLink>
+          </nav>
+        </section>
+
+        <section aria-labelledby="session-title">
+          <div class="bg-ice p-5 sm:p-6">
+            <h2 id="session-title" class="text-lg font-bold text-ink">Выйти из аккаунта</h2>
+            <p class="mt-2 text-sm leading-6 text-ink/65">Завершите сессию на этом устройстве.</p>
+            <p v-if="signOutError" class="mt-3 text-sm text-error" role="alert">{{ signOutError }}</p>
             <button
               type="button"
-              class="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 border border-ink px-5 text-sm font-bold text-ink hover:border-cobalt hover:bg-cobalt hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt disabled:cursor-wait disabled:opacity-50"
+              class="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 border border-ink px-5 text-sm font-bold text-ink hover:border-cobalt hover:bg-cobalt hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt disabled:cursor-wait disabled:opacity-50 sm:w-auto"
               :disabled="leaving"
+              :aria-busy="leaving"
               @click="signOut"
             >
               <Logout :size="19" aria-hidden="true" />

@@ -8,25 +8,27 @@ const footerGroups: { title: string; label: string; links: FooterLink[] }[] = [
     title: 'Коллекция',
     label: 'Коллекция',
     links: [
+      { label: 'Весь каталог', to: '/catalog' },
       { label: 'Женщинам', to: '/catalog?category=women' },
       { label: 'Мужчинам', to: '/catalog?category=men' },
       { label: 'Распродажа', to: '/catalog?sale=1' },
     ],
   },
   {
-    title: 'Выбор денима',
-    label: 'Выбор денима',
+    title: 'О BLUEFORM',
+    label: 'О BLUEFORM',
     links: [
-      { label: 'Все товары', to: '/catalog' },
+      { label: 'Главная', href: '#top' },
+      { label: 'Наш подход', href: '#about' },
       { label: 'Палитра денима', href: '#denim-palette' },
     ],
   },
   {
-    title: 'О BLUEFORM',
-    label: 'О BLUEFORM',
+    title: 'Покупателям',
+    label: 'Покупателям',
     links: [
-      { label: 'Наш подход', href: '#about' },
-      { label: 'Главная', href: '#top' },
+      { label: 'Избранное', to: '/favorites' },
+      { label: 'Корзина', to: '/cart' },
     ],
   },
 ];
@@ -35,7 +37,7 @@ const footerGroups: { title: string; label: string; links: FooterLink[] }[] = [
 <template>
   <footer class="site-footer w-full text-white">
     <div class="mx-auto w-full max-w-[1280px] px-4 pb-7 pt-12 sm:px-6 xl:px-8 lg:pt-14">
-      <div class="grid gap-x-8 gap-y-8 pb-10 sm:grid-cols-2 lg:grid-cols-4 lg:pb-14">
+      <div class="grid gap-x-8 gap-y-8 pb-10 sm:grid-cols-2 lg:grid-cols-3 lg:pb-14">
         <nav v-for="group in footerGroups" :key="group.title" :aria-label="group.label">
           <h2 class="text-[1.125rem] leading-tight font-semibold">{{ group.title }}</h2>
           <ul class="mt-6 space-y-3">
@@ -56,31 +58,6 @@ const footerGroups: { title: string; label: string; links: FooterLink[] }[] = [
             </li>
           </ul>
         </nav>
-
-        <div>
-          <h2 class="text-[1.125rem] leading-tight font-semibold">Покупателям</h2>
-          <ul class="mt-6 space-y-3">
-            <li>
-              <NuxtLink
-                to="/catalog"
-                class="text-sm leading-6 text-white/75 transition-colors hover:text-white"
-                >Каталог</NuxtLink
-              >
-            </li>
-            <li>
-              <NuxtLink
-                to="/favorites"
-                class="text-sm leading-6 text-white/75 transition-colors hover:text-white"
-                >Избранное</NuxtLink
-              >
-            </li>
-            <li>
-              <NuxtLink to="/cart" class="text-sm leading-6 text-white/75 transition-colors hover:text-white"
-                >Корзина</NuxtLink
-              >
-            </li>
-          </ul>
-        </div>
       </div>
 
       <div

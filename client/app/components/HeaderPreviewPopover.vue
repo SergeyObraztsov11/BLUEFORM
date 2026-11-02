@@ -34,6 +34,14 @@ const total = computed(() =>
   props.kind === 'cart' ? cart.total : items.value.reduce((sum, item) => sum + item.price, 0),
 );
 const isCart = computed(() => props.kind === 'cart');
+const actionTo = computed(() => {
+  if (!isCart.value) return '/favorites';
+  return items.value.length ? '/cart' : '/catalog';
+});
+const actionLabel = computed(() => {
+  if (!isCart.value) return 'ОТКРЫТЬ ИЗБРАННОЕ';
+  return items.value.length ? 'ПЕРЕЙТИ В КОРЗИНУ' : 'ПЕРЕЙТИ В КАТАЛОГ';
+});
 </script>
 
 <template>
@@ -50,7 +58,7 @@ const isCart = computed(() => props.kind === 'cart');
       </div>
       <button
         type="button"
-        class="-mr-1 -mt-1 flex size-8 items-center justify-center text-ink/60 hover:text-cobalt"
+        class="-mr-1 -mt-1 flex size-8 items-center justify-center text-ink/60 hover:text-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
         aria-label="Закрыть список"
         @click="emit('close')"
       >
@@ -62,7 +70,7 @@ const isCart = computed(() => props.kind === 'cart');
       <li v-for="item in items" :key="item.key" class="flex gap-3 py-3">
         <NuxtLink
           :to="`/product/${item.id}`"
-          class="block h-[68px] w-14 shrink-0 bg-ice"
+          class="block h-[68px] w-14 shrink-0 bg-ice focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
           :aria-label="`Открыть товар: ${item.name}, ${item.shade}`"
           @click="emit('close')"
           ><img
@@ -79,6 +87,7 @@ const isCart = computed(() => props.kind === 'cart');
           >
             <NuxtLink
               :to="`/product/${item.id}`"
+              class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
               :class="item.unavailable ? '' : 'hover:text-cobalt'"
               @click="emit('close')"
               >{{ item.name }}</NuxtLink
@@ -109,12 +118,8 @@ const isCart = computed(() => props.kind === 'cart');
     >
       <span>Итого</span><span>{{ total.toLocaleString('ru-RU') }} ₽</span>
     </div>
-    <NuxtLink
-      v-if="!isCart || items.length"
-      :to="isCart ? '/cart' : '/favorites'"
-      class="shop-button-primary mt-4 w-full shrink-0"
-      @click="emit('close')"
-      >{{ isCart ? 'ПЕРЕЙТИ В КОРЗИНУ' : 'ОТКРЫТЬ ИЗБРАННОЕ' }}</NuxtLink
-    >
+    <NuxtLink :to="actionTo" class="shop-button-primary mt-4 w-full shrink-0" @click="emit('close')">{{
+      actionLabel
+    }}</NuxtLink>
   </section>
 </template>

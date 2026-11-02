@@ -1,12 +1,21 @@
 <template>
   <section
-    class="rhythm-one flex flex-col justify-between overflow-hidden bg-cobalt p-6 text-white max-md:min-h-[220px] sm:p-8"
+    class="brand-closing rhythm-one flex flex-col justify-between bg-cobalt p-4 text-white max-md:min-h-[220px] sm:p-8"
     aria-label="BLUEFORM"
   >
-    <div class="type-label flex items-center justify-between gap-4">
-      <span>BLUEFORM / ДЕНИМ</span>
-      <span class="hidden sm:block">ДЕНИМ В ТВОЁМ РИТМЕ</span>
-    </div>
-    <p class="type-brand whitespace-nowrap text-[clamp(2.6rem,13vw,11rem)] leading-[0.8]">BLUEFORM</p>
+    <p class="type-label">ДЕНИМ В ТВОЁМ РИТМЕ</p>
+    <p class="brand-closing-mark type-brand leading-[0.8]">BLUEFORM</p>
   </section>
 </template>
+
+<style scoped>
+.brand-closing {
+  container-type: inline-size;
+  container-name: brand-closing;
+}
+
+.brand-closing-mark {
+  max-width: 100%;
+  font-size: clamp(1.75rem, 13.5cqi, 11rem);
+}
+</style>

@@ -68,6 +68,16 @@
   letter-spacing: -0.02em;
 }
 
+/* Cobalt page hero for shop routes. Scales down on narrow phones; wraps long uppercase titles. */
+.shop-page-banner-title {
+  max-width: 100%;
+  font-size: clamp(1.65rem, 0.55rem + 5.5vw, 4.7rem);
+  line-height: 1.06;
+  letter-spacing: -0.03em;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
 /* Shared language for finished shop pages. Keep home campaign typography separate. */
 .shop-breadcrumb {
   display: flex;

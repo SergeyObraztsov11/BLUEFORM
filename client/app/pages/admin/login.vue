@@ -54,13 +54,19 @@ async function submit() {
 
 <template>
   <section class="mx-auto max-w-md">
-    <p class="type-label text-cobalt">ДОСТУП ОГРАНИЧЕН</p>
-    <h1 class="mt-3 text-3xl font-bold text-ink">Вход администратора</h1>
-    <p class="mt-3 text-sm leading-6 text-ink/70">
-      Отдельный вход в панель заказов. Обычный покупатель сюда попасть не может.
-    </p>
+    <div class="border-t-2 border-ink pt-6">
+      <p class="type-label text-cobalt">ДОСТУП ОГРАНИЧЕН</p>
+      <h1 class="mt-3 text-3xl font-bold tracking-tight text-ink">Вход администратора</h1>
+      <p class="mt-3 text-sm leading-6 text-ink/70">
+        Отдельный вход в панель заказов. Обычный покупатель сюда попасть не может.
+      </p>
+    </div>
 
-    <form class="mt-8 grid gap-4 border-t border-seam pt-8" @submit.prevent="submit">
+    <form
+      class="mt-8 grid gap-5 border border-seam bg-white p-5 sm:p-6"
+      :aria-busy="submitting"
+      @submit.prevent="submit"
+    >
       <label class="grid gap-2 text-sm font-semibold text-ink">
         Электронная почта
         <input
@@ -68,7 +74,7 @@ async function submit() {
           type="email"
           autocomplete="username"
           required
-          class="h-12 border border-seam bg-white px-4 font-normal outline-none focus:border-cobalt"
+          class="h-12 border border-seam bg-white px-4 font-normal outline-none focus:border-cobalt focus:ring-1 focus:ring-cobalt"
         />
       </label>
       <label class="grid gap-2 text-sm font-semibold text-ink">
@@ -79,11 +85,17 @@ async function submit() {
           autocomplete="current-password"
           required
           minlength="8"
-          class="h-12 border border-seam bg-white px-4 font-normal outline-none focus:border-cobalt"
+          class="h-12 border border-seam bg-white px-4 font-normal outline-none focus:border-cobalt focus:ring-1 focus:ring-cobalt"
         />
       </label>
-      <p v-if="error" class="text-sm text-error" role="alert">{{ error }}</p>
-      <button type="submit" class="shop-button-primary" :disabled="submitting">ВОЙТИ</button>
+
+      <div v-if="error" class="border border-error/25 bg-ice/60 px-4 py-3 text-sm text-error" role="alert">
+        {{ error }}
+      </div>
+
+      <button type="submit" class="shop-button-primary w-full" :disabled="submitting">
+        {{ submitting ? 'ВХОДИМ…' : 'ВОЙТИ' }}
+      </button>
     </form>
   </section>
 </template>

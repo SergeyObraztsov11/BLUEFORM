@@ -33,6 +33,15 @@ const accountInitials = computed(() => {
       .toLocaleUpperCase('ru-RU');
   return (profile.email.trim().charAt(0) || '?').toLocaleUpperCase('ru-RU');
 });
+const accountMenuLabel = computed(() => {
+  const profile = account.profile;
+  if (!profile) return 'Меню аккаунта';
+  const name = [profile.firstName, profile.lastName]
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .join(' ');
+  return name ? `Меню аккаунта, ${name}` : `Меню аккаунта, ${profile.email}`;
+});
 
 const links = [
   { label: 'ГЛАВНАЯ', href: '#top' },
@@ -110,7 +119,7 @@ watch(() => route.fullPath, closePanels);
     <div class="flex h-16 items-center justify-between gap-3 md:h-[72px] lg:gap-5">
       <a
         href="/#top"
-        class="type-brand shrink-0 text-[21px] text-cobalt sm:text-[23px]"
+        class="type-brand shrink-0 text-[21px] text-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt sm:text-[23px]"
         aria-label="BLUEFORM — на главную"
         @click.prevent="navigate('#top')"
         >BLUEFORM</a
@@ -121,7 +130,7 @@ watch(() => route.fullPath, closePanels);
           <a
             v-if="link.href"
             :href="`/${link.href}`"
-            class="type-label py-3 text-ink transition-colors hover:text-cobalt"
+            class="type-label py-3 text-ink transition-colors hover:text-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
             :aria-current="link.href === '#top' && route.path === '/' ? 'page' : undefined"
             @click.prevent="navigate(link.href)"
             >{{ link.label }}</a
@@ -129,7 +138,7 @@ watch(() => route.fullPath, closePanels);
           <NuxtLink
             v-else-if="link.to"
             :to="link.to"
-            class="type-label border-b-2 py-3 transition-colors hover:text-cobalt"
+            class="type-label border-b-2 py-3 transition-colors hover:text-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
             :class="
               isCurrentCatalogLink(link.to) ? 'border-cobalt text-cobalt' : 'border-transparent text-ink'
             "
@@ -143,7 +152,7 @@ watch(() => route.fullPath, closePanels);
       <div class="ml-auto hidden shrink-0 items-center gap-0.5 sm:gap-1 lg:flex">
         <NuxtLink
           to="/catalog"
-          class="flex size-10 items-center justify-center text-ink transition-colors hover:text-cobalt"
+          class="flex size-10 items-center justify-center text-ink transition-colors hover:text-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
           aria-label="Открыть каталог"
           title="Каталог"
           @click="closePanels"
@@ -158,7 +167,7 @@ watch(() => route.fullPath, closePanels);
           <template #trigger="{ toggle, controls }">
             <button
               type="button"
-              class="relative flex size-10 items-center justify-center text-ink transition-colors hover:text-cobalt"
+              class="relative flex size-10 items-center justify-center text-ink transition-colors hover:text-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
               :aria-label="favoriteCount ? `Избранное, ${favoriteCount}` : 'Избранное'"
               title="Избранное"
               v-bind="controls"
@@ -184,7 +193,7 @@ watch(() => route.fullPath, closePanels);
           <template #trigger="{ toggle, controls }">
             <button
               type="button"
-              class="relative flex size-10 items-center justify-center text-ink transition-colors hover:text-cobalt"
+              class="relative flex size-10 items-center justify-center text-ink transition-colors hover:text-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
               :aria-label="cartCount ? `Корзина, ${cartCount}` : 'Корзина'"
               title="Корзина"
               v-bind="controls"
@@ -218,10 +227,9 @@ watch(() => route.fullPath, closePanels);
           <template #trigger="{ toggle, controls }">
             <button
               type="button"
-              class="flex size-10 items-center justify-center rounded-full bg-cobalt text-[11px] font-bold tracking-[0.04em] text-white transition-colors hover:bg-ink"
-              aria-label="Меню аккаунта"
+              class="flex size-10 items-center justify-center rounded-full bg-cobalt text-[11px] font-bold tracking-[0.04em] text-white transition-colors hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
+              :aria-label="accountMenuLabel"
               title="Аккаунт"
-              aria-haspopup="menu"
               v-bind="controls"
               @click="toggle"
             >
@@ -233,14 +241,14 @@ watch(() => route.fullPath, closePanels);
         <template v-else>
           <button
             type="button"
-            class="type-label hidden px-2 py-3 text-ink transition-colors hover:text-cobalt lg:flex"
+            class="type-label hidden px-2 py-3 text-ink transition-colors hover:text-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt lg:flex"
             @click="openAuth('login')"
           >
             ВОЙТИ
           </button>
           <button
             type="button"
-            class="type-label ml-2 hidden bg-cobalt px-4 py-3 text-white transition-colors hover:bg-ink lg:flex"
+            class="type-label ml-2 hidden bg-cobalt px-4 py-3 text-white transition-colors hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt lg:flex"
             @click="openAuth('register')"
           >
             РЕГИСТРАЦИЯ
@@ -257,7 +265,7 @@ watch(() => route.fullPath, closePanels);
 
       <button
         type="button"
-        class="type-label flex items-center gap-1.5 py-3 text-cobalt lg:hidden"
+        class="type-label flex items-center gap-1.5 py-3 text-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt lg:hidden"
         :class="account.isAuthenticated ? '' : 'ml-auto'"
         :aria-expanded="menuOpen"
         aria-controls="mobile-navigation"
@@ -275,7 +283,7 @@ watch(() => route.fullPath, closePanels);
     </div>
 
     <MobileNavigationDrawer :visible="menuOpen" @close="menuOpen = false" @auth="openAuth" />
-    <MobileTabBar />
+    <MobileTabBar @auth="openAuth" />
 
     <AuthModal
       v-if="authMode"
