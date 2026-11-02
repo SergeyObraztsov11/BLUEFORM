@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
-import { requestHeaders } from '~/utils/apiError';
+import { apiErrorMessage, requestHeaders } from '~/utils/apiError';
 
 export type ShopNotification = {
   id: string;
@@ -17,11 +17,13 @@ export const useNotificationsStore = defineStore('notifications', () => {
   const items = ref<ShopNotification[]>([]);
   const unreadCount = ref(0);
   const loaded = ref(false);
+  const loading = ref(false);
   const error = ref<string | null>(null);
 
   const unreadItems = computed(() => items.value.filter((item) => !item.read));
 
   async function load() {
+    loading.value = true;
     error.value = null;
     try {
       const response = await $fetch<{ items: ShopNotification[]; unreadCount: number }>(
@@ -34,8 +36,10 @@ export const useNotificationsStore = defineStore('notifications', () => {
     } catch (reason) {
       items.value = [];
       unreadCount.value = 0;
-      loaded.value = true;
-      error.value = reason instanceof Error ? reason.message : 'Не удалось загрузить уведомления.';
+      loaded.value = false;
+      error.value = apiErrorMessage(reason);
+    } finally {
+      loading.value = false;
     }
   }
 
@@ -43,6 +47,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
     items.value = [];
     unreadCount.value = 0;
     loaded.value = false;
+    loading.value = false;
     error.value = null;
   }
 
@@ -95,6 +100,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
     unreadCount,
     unreadItems,
     loaded,
+    loading,
     error,
     load,
     clear,

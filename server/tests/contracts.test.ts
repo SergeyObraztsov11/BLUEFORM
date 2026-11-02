@@ -41,10 +41,17 @@ test('current shop rejects anonymous order access and invalid catalogue input', 
   assert.equal(invalidPage.code, 'CATALOG_INVALID_PAGE');
 });
 
-test('checkout prompts a guest to sign in', async () => {
+test('checkout loads while anonymous order creation requires a session', async () => {
   const response = await fetch(`${shop}/checkout`);
   assert.equal(response.status, 200);
-  assert.match(await response.text(), /Чтобы оформить заказ, войдите или зарегистрируйтесь/);
+  assert.match(await response.text(), /ОФОРМЛЕНИЕ ЗАКАЗА/);
+  const order = await fetch(`${shop}/api/orders`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: '{}',
+  });
+  assert.equal(order.status, 401);
+  assert.equal(((await order.json()) as { code: string }).code, 'SESSION_REQUIRED');
 });
 
 test('catalogue pages render through Nuxt', async () => {

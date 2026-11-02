@@ -21,12 +21,14 @@ watch(
 watch(open, (value) => {
   if (value) {
     emit('open');
-    if (!notifications.loaded) void notifications.load();
+    if (!notifications.loaded && !notifications.loading) void notifications.load();
   }
 });
 
 const preview = computed(() => notifications.items.slice(0, 5));
 const unreadCount = computed(() => notifications.unreadCount);
+const showLoading = computed(() => notifications.loading && !preview.value.length && !notifications.error);
+const showError = computed(() => Boolean(notifications.error) && !preview.value.length);
 
 function formatWhen(value: string) {
   return new Date(value).toLocaleString('ru-RU', {
@@ -42,6 +44,10 @@ async function openItem(id: string, href: string | null) {
   open.value = false;
   if (href) await navigateTo(href);
 }
+
+async function retryLoad() {
+  await notifications.load();
+}
 </script>
 
 <template>
@@ -54,7 +60,7 @@ async function openItem(id: string, href: string | null) {
     <template #trigger="{ toggle, controls }">
       <button
         type="button"
-        class="relative flex size-10 items-center justify-center text-ink transition-colors hover:text-cobalt"
+        class="relative flex size-10 items-center justify-center text-ink transition-colors hover:text-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
         :aria-label="unreadCount ? `Уведомления, ${unreadCount} непрочитанных` : 'Уведомления'"
         title="Уведомления"
         v-bind="controls"
@@ -79,22 +85,52 @@ async function openItem(id: string, href: string | null) {
         </div>
         <button
           type="button"
-          class="-mr-1 -mt-1 flex size-8 items-center justify-center text-ink/60 hover:text-cobalt"
+          class="-mr-1 -mt-1 flex size-8 items-center justify-center text-ink/60 hover:text-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
           aria-label="Закрыть уведомления"
           @click="open = false"
         >
           <Close :size="20" aria-hidden="true" />
         </button>
       </div>
-      <ul v-if="preview.length" class="mt-4 min-h-0 divide-y divide-seam border-y border-seam">
+
+      <div
+        v-if="showLoading"
+        class="mt-4 border-y border-seam py-5 text-sm text-ink/60"
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+      >
+        Загружаем уведомления…
+      </div>
+
+      <div v-else-if="showError" class="mt-4 border-y border-seam py-5">
+        <p class="text-sm text-error" role="alert">{{ notifications.error }}</p>
+        <button
+          type="button"
+          class="mt-3 text-xs font-semibold text-cobalt hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
+          :disabled="notifications.loading"
+          :aria-busy="notifications.loading"
+          @click="retryLoad"
+        >
+          {{ notifications.loading ? 'Повторяем…' : 'Повторить' }}
+        </button>
+      </div>
+
+      <ul
+        v-else-if="preview.length"
+        class="mt-4 min-h-0 overflow-y-auto overscroll-contain divide-y divide-seam border-y border-seam"
+      >
         <li v-for="item in preview" :key="item.id">
           <button
             type="button"
-            class="w-full py-3 text-left transition-colors hover:bg-ice/70"
+            class="w-full py-3 text-left transition-colors hover:bg-ice/70 focus-visible:bg-ice/70 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-cobalt"
+            :aria-label="item.read ? item.title : `${item.title}, непрочитано`"
             @click="openItem(item.id, item.href)"
           >
             <div class="flex items-start justify-between gap-3">
-              <p class="text-[13px] font-semibold leading-5 text-ink">{{ item.title }}</p>
+              <p class="text-[13px] font-semibold leading-5 text-ink" aria-hidden="true">
+                {{ item.title }}
+              </p>
               <span
                 v-if="!item.read"
                 class="mt-1 size-2 shrink-0 rounded-full bg-cobalt"
@@ -106,19 +142,21 @@ async function openItem(id: string, href: string | null) {
           </button>
         </li>
       </ul>
+
       <p v-else class="mt-4 border-y border-seam py-5 text-sm text-ink/60">Пока нет уведомлений.</p>
+
       <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
         <button
           v-if="unreadCount"
           type="button"
-          class="text-xs font-semibold text-cobalt hover:text-ink"
+          class="text-xs font-semibold text-cobalt hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
           @click="notifications.markAllRead()"
         >
           Прочитать все
         </button>
         <NuxtLink
           to="/notifications"
-          class="ml-auto text-xs font-semibold text-cobalt hover:text-ink"
+          class="ml-auto text-xs font-semibold text-cobalt hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
           @click="open = false"
         >
           Все уведомления

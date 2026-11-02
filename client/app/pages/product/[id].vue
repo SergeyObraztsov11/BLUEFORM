@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { CatalogPage, CatalogProduct } from '~/data/catalog';
-import { requestHeaders } from '~/utils/apiError';
+import { apiErrorMessage, requestHeaders } from '~/utils/apiError';
 
 const route = useRoute();
 const id = computed(() => String(route.params.id));
 
-const { data: product, status } = await useAsyncData(
+const {
+  data: product,
+  status,
+  error,
+  refresh,
+} = await useAsyncData(
   () => `product-${id.value}`,
   async () => {
     try {
@@ -34,10 +39,17 @@ const { data: relatedProducts } = await useAsyncData(
   { watch: [() => product.value?.id], default: () => [] },
 );
 
+const loadErrorMessage = computed(() =>
+  error.value ? apiErrorMessage(error.value) : 'Не удалось загрузить товар. Попробуйте ещё раз.',
+);
+
 useHead(() => ({
-  title: product.value
-    ? `${product.value.name} — ${product.value.shade} | BLUEFORM`
-    : 'Товар не найден | BLUEFORM',
+  title:
+    status.value === 'error'
+      ? 'Ошибка загрузки | BLUEFORM'
+      : product.value
+        ? `${product.value.name} — ${product.value.shade} | BLUEFORM`
+        : 'Товар не найден | BLUEFORM',
 }));
 </script>
 
@@ -48,6 +60,10 @@ useHead(() => ({
       <ProductDetails :product="product" class="pb-16 md:pb-20" />
       <ProductRelated :products="relatedProducts ?? []" />
     </template>
+    <section v-else-if="status === 'error'" class="pb-24">
+      <ShopPageBanner title="НЕ УДАЛОСЬ ЗАГРУЗИТЬ" :lead="loadErrorMessage" />
+      <button type="button" class="shop-button-primary mt-8" @click="refresh()">ПОВТОРИТЬ</button>
+    </section>
     <section v-else class="pb-24">
       <ShopPageBanner title="ТОВАР НЕ НАЙДЕН" lead="Возможно, ссылка устарела." />
       <NuxtLink to="/catalog" class="shop-button-primary mt-8">ПЕРЕЙТИ В КАТАЛОГ</NuxtLink>

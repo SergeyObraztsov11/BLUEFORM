@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, ref, useTemplateRef, watch } from 'vue';
+import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
 import { CloseW400 as Close } from '@material-symbols-svg/vue/sharp/icons/close';
 import { authClient } from '~/utils/authClient';
 import { apiErrorMessage } from '~/utils/apiError';
@@ -27,7 +27,15 @@ const password = ref('');
 const showPassword = ref(false);
 const code = ref(['', '', '', '', '']);
 const error = ref<string | null>(null);
-const submitting = ref(false);
+const busy = ref<'details' | 'code' | 'resend' | null>(null);
+const submitting = computed(() => busy.value !== null);
+
+const emailAutocomplete = computed(() => (props.mode === 'login' ? 'username' : 'email'));
+const passwordAutocomplete = computed(() => (props.mode === 'login' ? 'current-password' : 'new-password'));
+const detailsSubmitLabel = computed(() => {
+  if (busy.value !== 'details') return props.mode === 'login' ? 'ВОЙТИ' : 'ПРОДОЛЖИТЬ';
+  return props.mode === 'login' ? 'ВХОДИМ…' : 'ОТПРАВЛЯЕМ…';
+});
 
 function focusCodeInput(index: number) {
   void nextTick(() => codeInputs.value?.[index]?.focus());
@@ -70,8 +78,9 @@ async function finishSignIn() {
 }
 
 async function submitDetails() {
+  if (busy.value) return;
   error.value = null;
-  submitting.value = true;
+  busy.value = 'details';
   try {
     if (props.mode === 'register') {
       const result = await authClient.signUp.email({
@@ -99,13 +108,14 @@ async function submitDetails() {
     }
     await finishSignIn();
   } finally {
-    submitting.value = false;
+    busy.value = null;
   }
 }
 
 async function submitCode() {
+  if (busy.value) return;
   error.value = null;
-  submitting.value = true;
+  busy.value = 'code';
   try {
     const result = await authClient.emailOtp.verifyEmail({ email: email.value, otp: code.value.join('') });
     if (result.error) {
@@ -115,13 +125,14 @@ async function submitCode() {
     shouldWelcome.value = true;
     await finishSignIn();
   } finally {
-    submitting.value = false;
+    busy.value = null;
   }
 }
 
 async function resendCode() {
+  if (busy.value) return;
   error.value = null;
-  submitting.value = true;
+  busy.value = 'resend';
   try {
     const result = await authClient.emailOtp.sendVerificationOtp({
       email: email.value,
@@ -129,7 +140,7 @@ async function resendCode() {
     });
     error.value = result.error ? authMessage(result.error) : 'Новый код отправлен.';
   } finally {
-    submitting.value = false;
+    busy.value = null;
   }
 }
 
@@ -153,23 +164,23 @@ function onCodePaste(event: ClipboardEvent) {
   focusCodeInput(Math.min(digits.length, 4));
 }
 
+function resetDetails() {
+  step.value = 'details';
+  email.value = '';
+  password.value = '';
+  showPassword.value = false;
+  error.value = null;
+  code.value = ['', '', '', '', ''];
+  shouldWelcome.value = false;
+  void nextTick(() => firstInput.value?.focus());
+}
+
 watch(step, (value) => {
   if (value === 'code') focusCodeInput(0);
   else void nextTick(() => firstInput.value?.focus());
 });
 
-watch(
-  () => props.mode,
-  () => {
-    step.value = 'details';
-    email.value = '';
-    password.value = '';
-    error.value = null;
-    code.value = ['', '', '', '', ''];
-    shouldWelcome.value = false;
-    void nextTick(() => firstInput.value?.focus());
-  },
-);
+watch(() => props.mode, resetDetails);
 </script>
 
 <template>
@@ -190,7 +201,7 @@ watch(
       </div>
       <button
         type="button"
-        class="-mr-2 -mt-2 flex size-10 shrink-0 items-center justify-center text-white transition-colors hover:bg-white/15"
+        class="-mr-2 -mt-2 flex size-10 shrink-0 items-center justify-center text-white transition-colors hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
         aria-label="Закрыть окно"
         @click="emit('close')"
       >
@@ -207,17 +218,19 @@ watch(
               : 'Регистрация в BLUEFORM. Следующий шаг — подтверждение почты.'
           }}
         </p>
-        <form class="mt-6 grid gap-4" autocomplete="off" @submit.prevent="submitDetails">
+        <form class="mt-6 grid gap-4" @submit.prevent="submitDetails">
           <label class="grid gap-2 text-sm font-medium text-ink">
             Электронная почта
             <input
               ref="firstInput"
               v-model.trim="email"
+              name="email"
               type="email"
-              autocomplete="off"
+              :autocomplete="emailAutocomplete"
               required
+              :disabled="submitting"
               placeholder="you@example.com"
-              class="h-12 w-full border border-seam bg-white px-4 font-normal outline-none transition-colors placeholder:text-ink/35 focus:border-cobalt"
+              class="h-12 w-full border border-seam bg-white px-4 font-normal outline-none transition-colors placeholder:text-ink/35 focus:border-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt disabled:cursor-wait disabled:bg-ice disabled:text-ink/50"
             />
           </label>
           <label class="grid gap-2 text-sm font-medium text-ink">
@@ -227,17 +240,21 @@ watch(
             >
               <input
                 v-model="password"
+                name="password"
                 :type="showPassword ? 'text' : 'password'"
-                autocomplete="new-password"
+                :autocomplete="passwordAutocomplete"
                 required
                 minlength="8"
-                placeholder="Не менее 8 символов"
-                class="min-w-0 flex-1 bg-transparent px-4 font-normal outline-none placeholder:text-ink/35"
+                :disabled="submitting"
+                :placeholder="mode === 'login' ? 'Ваш пароль' : 'Не менее 8 символов'"
+                class="min-w-0 flex-1 bg-transparent px-4 font-normal outline-none placeholder:text-ink/35 disabled:cursor-wait disabled:text-ink/50"
               />
               <button
                 type="button"
-                class="h-full shrink-0 px-3 text-xs font-semibold text-cobalt hover:text-ink"
+                class="h-full shrink-0 px-3 text-xs font-semibold text-cobalt hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-cobalt disabled:cursor-wait disabled:text-ink/40"
                 :aria-label="showPassword ? 'Скрыть пароль' : 'Показать пароль'"
+                :aria-pressed="showPassword"
+                :disabled="submitting"
                 @click="showPassword = !showPassword"
               >
                 {{ showPassword ? 'СКРЫТЬ' : 'ПОКАЗАТЬ' }}
@@ -247,17 +264,19 @@ watch(
           <p v-if="error" class="text-sm text-error" role="alert">{{ error }}</p>
           <button
             type="submit"
-            class="mt-2 h-12 bg-cobalt px-5 text-sm font-bold text-white transition-colors hover:bg-ink disabled:cursor-wait disabled:bg-ink/40"
+            class="mt-2 h-12 bg-cobalt px-5 text-sm font-bold text-white transition-colors hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt disabled:cursor-wait disabled:bg-ink/40"
             :disabled="submitting"
+            :aria-busy="submitting"
           >
-            {{ mode === 'login' ? 'ВОЙТИ' : 'ПРОДОЛЖИТЬ' }}
+            {{ detailsSubmitLabel }}
           </button>
         </form>
         <div class="mt-6 border-t border-seam pt-5 text-sm text-ink/70">
           {{ mode === 'login' ? 'Нет аккаунта?' : 'Уже есть аккаунт?' }}
           <button
             type="button"
-            class="ml-1 font-semibold text-cobalt hover:underline"
+            class="ml-1 font-semibold text-cobalt hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
+            :disabled="submitting"
             @click="emit('switch', mode === 'login' ? 'register' : 'login')"
           >
             {{ mode === 'login' ? 'Зарегистрироваться' : 'Войти' }}
@@ -270,7 +289,12 @@ watch(
           Введите пятизначный код для <span class="font-semibold text-ink">{{ email }}</span>
         </p>
         <form class="mt-6" @submit.prevent="submitCode">
-          <div class="flex justify-between gap-2" @paste="onCodePaste">
+          <div
+            class="flex justify-between gap-2"
+            role="group"
+            aria-label="Код подтверждения из письма"
+            @paste="onCodePaste"
+          >
             <input
               v-for="(_, index) in 5"
               :key="index"
@@ -281,8 +305,11 @@ watch(
               pattern="[0-9]"
               maxlength="1"
               required
-              :aria-label="`Цифра кода ${index + 1}`"
-              class="h-14 min-w-0 w-full border border-seam bg-white text-center text-2xl font-semibold text-ink outline-none transition-colors focus:border-cobalt sm:h-16"
+              :name="index === 0 ? 'one-time-code' : undefined"
+              :autocomplete="index === 0 ? 'one-time-code' : 'off'"
+              :disabled="submitting"
+              :aria-label="`Цифра кода ${index + 1} из 5`"
+              class="h-14 min-w-0 w-full border border-seam bg-white text-center text-2xl font-semibold text-ink outline-none transition-colors focus:border-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt disabled:cursor-wait disabled:bg-ice disabled:text-ink/50 sm:h-16"
               @input="onCodeInput(index)"
               @keydown="onCodeKeydown($event, index)"
             />
@@ -290,23 +317,26 @@ watch(
           <p v-if="error" class="mt-4 text-sm text-error" role="alert">{{ error }}</p>
           <button
             type="submit"
-            class="mt-6 h-12 w-full bg-cobalt px-5 text-sm font-bold text-white transition-colors hover:bg-ink disabled:cursor-wait disabled:bg-ink/40"
+            class="mt-6 h-12 w-full bg-cobalt px-5 text-sm font-bold text-white transition-colors hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt disabled:cursor-wait disabled:bg-ink/40"
             :disabled="submitting"
+            :aria-busy="submitting"
           >
-            ПОДТВЕРДИТЬ ПОЧТУ
+            {{ busy === 'code' ? 'ПОДТВЕРЖДАЕМ…' : 'ПОДТВЕРДИТЬ ПОЧТУ' }}
           </button>
         </form>
         <button
           type="button"
-          class="mt-5 text-sm font-semibold text-cobalt hover:underline disabled:text-ink/40"
+          class="mt-5 text-sm font-semibold text-cobalt hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt disabled:cursor-wait disabled:text-ink/40"
           :disabled="submitting"
+          :aria-busy="busy === 'resend'"
           @click="resendCode"
         >
-          Отправить код ещё раз
+          {{ busy === 'resend' ? 'Отправляем код…' : 'Отправить код ещё раз' }}
         </button>
         <button
           type="button"
-          class="mt-3 block text-sm font-semibold text-cobalt hover:underline"
+          class="mt-3 block text-sm font-semibold text-cobalt hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt disabled:cursor-wait disabled:text-ink/40"
+          :disabled="submitting"
           @click="step = 'details'"
         >
           Изменить почту

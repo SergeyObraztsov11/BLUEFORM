@@ -96,7 +96,7 @@ function isCurrentShopLink(to: string) {
 }
 
 const rowClass =
-  'flex min-h-[58px] w-full items-center justify-between gap-3 border-b border-seam px-1 text-left text-[17px] font-semibold leading-5 text-ink transition-colors hover:text-cobalt';
+  'flex min-h-[58px] w-full items-center justify-between gap-3 border-b border-seam px-1 text-left text-[17px] font-semibold leading-5 text-ink transition-colors hover:text-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt';
 
 function openSection(hash: string) {
   emit('close');
@@ -148,7 +148,7 @@ async function signOut() {
       <button
         ref="closeButton"
         type="button"
-        class="-mr-2 -mt-2 flex size-10 shrink-0 items-center justify-center text-white hover:bg-white/15"
+        class="-mr-2 -mt-2 flex size-10 shrink-0 items-center justify-center text-white hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
         aria-label="Закрыть меню"
         @click="emit('close')"
       >
@@ -165,7 +165,12 @@ async function signOut() {
         <p class="type-label mb-3 text-cobalt">АККАУНТ</p>
         <ul>
           <li v-if="!profile">
-            <button type="button" :class="[rowClass, 'group py-3']" @click="emit('auth', 'login')">
+            <button
+              type="button"
+              :class="[rowClass, 'group py-3']"
+              aria-label="Войти или зарегистрироваться"
+              @click="emit('auth', 'login')"
+            >
               <span class="flex min-w-0 items-center gap-3">
                 <Person :size="22" class="shrink-0" aria-hidden="true" />
                 <span class="min-w-0 text-left">
@@ -211,7 +216,7 @@ async function signOut() {
           <li v-for="link in shopLinks" :key="link.to">
             <NuxtLink
               :to="link.to"
-              class="flex min-h-[58px] items-center justify-between gap-3 border-b px-1 text-[17px] font-semibold leading-5 transition-colors"
+              class="flex min-h-[58px] items-center justify-between gap-3 border-b px-1 text-[17px] font-semibold leading-5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
               :class="
                 isCurrentShopLink(link.to)
                   ? 'border-cobalt text-cobalt'
@@ -233,7 +238,7 @@ async function signOut() {
           <li>
             <a
               href="/#top"
-              class="flex min-h-[52px] items-center justify-between gap-3 border-b border-seam px-1 text-[15px] font-medium text-ink transition-colors hover:text-cobalt"
+              class="flex min-h-[52px] items-center justify-between gap-3 border-b border-seam px-1 text-[15px] font-medium text-ink transition-colors hover:text-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
               @click.prevent="openSection('#top')"
             >
               Главная <ArrowForward :size="19" class="shrink-0" aria-hidden="true" />
@@ -242,7 +247,7 @@ async function signOut() {
           <li>
             <a
               href="/#denim-palette"
-              class="flex min-h-[52px] items-center justify-between gap-3 border-b border-seam px-1 text-[15px] font-medium text-ink transition-colors hover:text-cobalt"
+              class="flex min-h-[52px] items-center justify-between gap-3 border-b border-seam px-1 text-[15px] font-medium text-ink transition-colors hover:text-cobalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
               @click.prevent="openSection('#denim-palette')"
             >
               Палитра тканей <ArrowForward :size="19" class="shrink-0" aria-hidden="true" />
@@ -258,12 +263,13 @@ async function signOut() {
     >
       <button
         type="button"
-        class="flex min-h-12 w-full items-center gap-3 px-1 text-left text-[15px] font-medium text-ink/55 transition-colors hover:text-ink disabled:cursor-wait disabled:text-ink/30"
+        class="flex min-h-12 w-full items-center gap-3 px-1 text-left text-[15px] font-medium text-ink/55 transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt disabled:cursor-wait disabled:text-ink/30"
         :disabled="leaving"
+        :aria-busy="leaving"
         @click="signOut"
       >
         <Logout :size="22" class="shrink-0" aria-hidden="true" />
-        Выйти
+        {{ leaving ? 'Выходим…' : 'Выйти' }}
       </button>
     </div>
   </UiModalShell>

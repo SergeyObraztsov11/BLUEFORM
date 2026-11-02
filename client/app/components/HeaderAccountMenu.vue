@@ -47,7 +47,7 @@ async function signOut() {
 </script>
 
 <template>
-  <div role="menu" aria-label="Меню аккаунта">
+  <nav aria-label="Меню аккаунта">
     <div v-if="profile" class="border-b border-seam px-4 py-3">
       <p class="truncate text-sm font-semibold text-ink">{{ accountName }}</p>
       <p v-if="accountName !== profile.email" class="mt-0.5 truncate text-xs text-ink/55">
@@ -58,8 +58,8 @@ async function signOut() {
       v-for="item in items"
       :key="item.id"
       :to="item.to"
-      role="menuitem"
-      class="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-ink transition-colors hover:bg-ice hover:text-cobalt"
+      class="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors hover:bg-ice hover:text-cobalt focus-visible:bg-ice focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-cobalt"
+      :class="route.path === item.to ? 'bg-ice/80 font-semibold text-cobalt' : 'text-ink'"
       :aria-current="route.path === item.to ? 'page' : undefined"
       @click="emit('close')"
     >
@@ -69,14 +69,14 @@ async function signOut() {
     <div class="mt-1 border-t border-seam pt-1">
       <button
         type="button"
-        role="menuitem"
-        class="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-ink transition-colors hover:bg-ice hover:text-cobalt disabled:cursor-wait disabled:text-ink/40"
+        class="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-ink transition-colors hover:bg-ice hover:text-cobalt focus-visible:bg-ice focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-cobalt disabled:cursor-wait disabled:text-ink/40"
         :disabled="leaving"
+        :aria-busy="leaving"
         @click="signOut"
       >
         <Logout :size="20" class="shrink-0" aria-hidden="true" />
-        Выйти
+        {{ leaving ? 'Выходим…' : 'Выйти' }}
       </button>
     </div>
-  </div>
+  </nav>
 </template>

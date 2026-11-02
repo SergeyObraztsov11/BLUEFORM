@@ -4,14 +4,19 @@ import { FavoriteW400 as Favorite } from '@material-symbols-svg/vue/sharp/icons/
 import { PersonW400 as Person } from '@material-symbols-svg/vue/sharp/icons/person';
 import { SearchW400 as Search } from '@material-symbols-svg/vue/sharp/icons/search';
 import { ShoppingBagW400 as ShoppingBag } from '@material-symbols-svg/vue/sharp/icons/shopping-bag';
+import { useAccountStore } from '~/stores/account';
 import { useCartStore } from '~/stores/cart';
 import { useFavoritesStore } from '~/stores/favorites';
 
+const emit = defineEmits<{ auth: [mode: 'login' | 'register'] }>();
+
 const route = useRoute();
+const account = useAccountStore();
 const cart = useCartStore();
 const favorites = useFavoritesStore();
 const cartCount = computed(() => cart.activeLines.length);
 const favoriteCount = computed(() => favorites.items.length);
+const isAuthenticated = computed(() => account.isAuthenticated);
 </script>
 
 <template>
@@ -87,6 +92,7 @@ const favoriteCount = computed(() => favorites.items.length);
         >
       </NuxtLink>
       <NuxtLink
+        v-if="isAuthenticated"
         to="/profile"
         class="relative flex min-h-16 flex-col items-center justify-center gap-1 px-1 text-ink transition-colors hover:text-cobalt"
         :class="route.path === '/profile' ? 'text-cobalt' : ''"
@@ -100,6 +106,16 @@ const favoriteCount = computed(() => favorites.items.length);
         <Person :size="24" aria-hidden="true" />
         <span class="text-[11px] font-bold leading-none whitespace-nowrap tracking-[0.02em]">ПРОФИЛЬ</span>
       </NuxtLink>
+      <button
+        v-else
+        type="button"
+        class="relative flex min-h-16 flex-col items-center justify-center gap-1 px-1 text-ink transition-colors hover:text-cobalt"
+        aria-label="Профиль: войти или зарегистрироваться"
+        @click="emit('auth', 'login')"
+      >
+        <Person :size="24" aria-hidden="true" />
+        <span class="text-[11px] font-bold leading-none whitespace-nowrap tracking-[0.02em]">ПРОФИЛЬ</span>
+      </button>
     </div>
   </nav>
 </template>
