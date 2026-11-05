@@ -138,6 +138,61 @@ services:
       directus-db:
         condition: service_healthy
 
+  directus-shop-init:
+    profiles: [admin]
+    image: postgres:17-alpine
+    environment:
+      PGHOST: db
+      PGDATABASE: blueform
+      PGUSER: blueform
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      DIRECTUS_SHOP_DB_PASSWORD: ${DIRECTUS_SHOP_DB_PASSWORD:-local-only-directus-shop-password}
+    volumes:
+      - ./scripts/directus-shop-init.sql:/directus-shop-init.sql:ro
+      - ./scripts/directus-shop-check.sql:/directus-shop-check.sql:ro
+    entrypoint: ['/bin/sh', '-ec']
+    command:
+      - 'psql -v directus_password="$$DIRECTUS_SHOP_DB_PASSWORD" -f /directus-shop-init.sql'
+    depends_on:
+      db:
+        condition: service_healthy
+
+  directus-shop:
+    profiles: [admin]
+    image: directus/directus:11.14.1
+    ports:
+      - '127.0.0.1:8058:8055'
+    environment:
+      SECRET: ${DIRECTUS_SHOP_SECRET:-local-only-change-shop-directus-secret}
+      ADMIN_EMAIL: ${DIRECTUS_ADMIN_EMAIL:-admin@example.com}
+      ADMIN_PASSWORD: ${DIRECTUS_ADMIN_PASSWORD:-BlueformLocal123!}
+      DB_CLIENT: pg
+      DB_HOST: db
+      DB_PORT: '5432'
+      DB_DATABASE: blueform
+      DB_USER: blueform_directus_shop
+      DB_PASSWORD: ${DIRECTUS_SHOP_DB_PASSWORD:-local-only-directus-shop-password}
+      PUBLIC_URL: http://localhost:8058
+    volumes:
+      - directus_shop_uploads:/directus/uploads
+    depends_on:
+      directus-shop-init:
+        condition: service_completed_successfully
+
+  directus-shop-config:
+    profiles: [admin]
+    image: node:24-bookworm-slim
+    environment:
+      DIRECTUS_URL: http://directus-shop:8055
+      DIRECTUS_ADMIN_EMAIL: ${DIRECTUS_ADMIN_EMAIL:-admin@example.com}
+      DIRECTUS_ADMIN_PASSWORD: ${DIRECTUS_ADMIN_PASSWORD:-BlueformLocal123!}
+    volumes:
+      - ./scripts/configure-directus-shop.mjs:/configure-directus-shop.mjs:ro
+    command: ['node', '/configure-directus-shop.mjs']
+    depends_on:
+      directus-shop:
+        condition: service_started
+
   prometheus:
     profiles: [observability]
     image: prom/prometheus:v3.5.0
@@ -226,6 +281,7 @@ volumes:
   s3_data:
   directus_db_data:
   directus_uploads:
+  directus_shop_uploads:
   prometheus_data:
   loki_data:
   alloy_data:
