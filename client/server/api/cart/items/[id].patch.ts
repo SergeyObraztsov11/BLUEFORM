@@ -14,7 +14,12 @@ export default defineEventHandler(async (event) => {
 
   if (body.size && body.size !== item.sku.size.code) {
     const nextSku = await prisma.sku.findFirst({
-      where: { colorwayId: item.sku.colorwayId, isActive: true, size: { code: body.size } },
+      where: {
+        colorwayId: item.sku.colorwayId,
+        isActive: true,
+        size: { code: body.size },
+        colorway: { status: 'PUBLISHED', product: { status: 'PUBLISHED' } },
+      },
       select: { id: true, stockQuantity: true },
     });
     if (!nextSku) apiError('CART_SIZE_UNAVAILABLE');
@@ -37,8 +42,14 @@ export default defineEventHandler(async (event) => {
   const quantity = body.quantity ?? item.quantity;
   const removed = body.removed ?? item.removed;
   const reducingExisting = !item.removed && body.quantity !== undefined && quantity < item.quantity;
-  if (!removed && quantity > item.sku.stockQuantity && !reducingExisting)
-    apiError('OUT_OF_STOCK', { stock: item.sku.stockQuantity });
+  const colorway = await prisma.productColorway.findUnique({
+    where: { id: item.sku.colorwayId },
+    select: { status: true, product: { select: { status: true } } },
+  });
+  const available =
+    item.sku.isActive && colorway?.status === 'PUBLISHED' && colorway.product.status === 'PUBLISHED';
+  const stock = available ? item.sku.stockQuantity : 0;
+  if (!removed && quantity > stock && !reducingExisting) apiError('OUT_OF_STOCK', { stock });
   await prisma.cartItem.update({
     where: { id: item.id },
     data: { quantity, removed },

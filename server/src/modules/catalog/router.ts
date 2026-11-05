@@ -5,16 +5,47 @@ import { getCategories, getProducts, getProductById } from './controller.js';
 import { catalogErrorSchema, categoryListSchema, productPageSchema, productSchema } from './schema.js';
 import { database } from '../../database.js';
 import path from 'node:path';
+import { listOptions } from './service.js';
 
 export function createCatalogModule() {
   const router = Router();
   const registry = new OpenAPIRegistry();
+  registry.registerPath({
+    method: 'get',
+    path: '/api/catalog/options',
+    tags: ['Каталог'],
+    summary: 'Получить доступные цвета, размеры и названия товаров',
+    responses: {
+      200: {
+        description: 'Доступные параметры каталога',
+        content: {
+          'application/json': {
+            schema: z.object({
+              colors: z.array(z.object({ name: z.string(), hex: z.string() })),
+              sizes: z.array(z.string()),
+              products: z.array(z.string()),
+            }),
+          },
+        },
+      },
+    },
+  });
+  router.get('/api/catalog/options', async (_req, res, next) => {
+    try {
+      res.json(await listOptions());
+    } catch (error) {
+      next(error);
+    }
+  });
   router.get('/api/catalog/images/:id', async (req, res, next) => {
     try {
       const image = await database().productImage.findFirst({
         where: {
           mediaFileId: req.params.id,
-          colorway: { status: 'PUBLISHED', product: { status: 'PUBLISHED' } },
+          colorway: {
+            status: { in: ['PUBLISHED', 'ARCHIVED'] },
+            product: { status: { in: ['PUBLISHED', 'ARCHIVED'] } },
+          },
         },
         include: { mediaFile: true },
       });

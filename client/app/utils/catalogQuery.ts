@@ -1,5 +1,5 @@
 import type { LocationQuery, LocationQueryRaw } from 'vue-router';
-import { emptyCatalogFilters, fabrics, russianSizes } from '~/data/catalog';
+import { emptyCatalogFilters } from '~/data/catalog';
 import { catalogCategories } from '~/data/catalog-categories';
 import type { CatalogCategory, CatalogFilterState, CatalogSort } from '~/data/catalog';
 
@@ -55,8 +55,8 @@ export function parseCatalogQuery(query: LocationQuery): {
     search: firstQueryValue(query.q).trim().slice(0, 100),
     filters: {
       ...emptyCatalogFilters(),
-      shades: fabrics.filter((fabric) => shadeValues.has(fabric.name)).map((fabric) => fabric.name),
-      sizes: russianSizes.filter((size) => sizeValues.has(size)),
+      shades: [...shadeValues].filter((value) => value.length > 0 && value.length <= 100).slice(0, 30),
+      sizes: [...sizeValues].filter((value) => value.length > 0 && value.length <= 30).slice(0, 100),
       sale: firstQueryValue(query.sale) === '1',
       inStock: firstQueryValue(query.stock) === '1',
       minPrice,

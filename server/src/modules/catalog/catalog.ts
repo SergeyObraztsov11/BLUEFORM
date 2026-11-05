@@ -26,9 +26,11 @@ export type CatalogCard = {
   category: 'women' | 'men';
   categorySlug: string;
   shade: string;
-  sizes: { code: string; stock: number }[];
+  shadeHex: string;
+  sizes: { code: string; stock: number; price: number; oldPrice?: number }[];
   fit: string;
   price: number;
+  priceFrom?: boolean;
   oldPrice?: number;
   description?: string;
   model?: { heightCm: number; size: string; weightKg?: number };
@@ -53,9 +55,11 @@ export function toCatalogCard(
   priceSku?: ColorwayRecord['skus'][number],
 ): CatalogCard | null {
   const skus = [...colorway.skus].sort((a, b) => a.size.sortOrder - b.size.sortOrder);
+  const availableSkus = skus.filter((sku) => sku.stockQuantity > 0);
+  const displaySkus = availableSkus.length ? availableSkus : skus;
   const priced =
     priceSku ??
-    skus.reduce<(typeof skus)[number] | null>((best, sku) => {
+    displaySkus.reduce<(typeof skus)[number] | null>((best, sku) => {
       if (!best || sku.priceKopecks < best.priceKopecks) return sku;
       return best;
     }, null);
@@ -74,9 +78,16 @@ export function toCatalogCard(
     category: rootCategory(category),
     categorySlug: colorway.product.category.slug,
     shade: colorway.fabric.colorName,
-    sizes: skus.map((sku) => ({ code: sku.size.code, stock: sku.stockQuantity })),
+    shadeHex: colorway.fabric.colorHex,
+    sizes: skus.map((sku) => ({
+      code: sku.size.code,
+      stock: sku.stockQuantity,
+      price: rubles(sku.priceKopecks),
+      ...(sku.oldPriceKopecks != null ? { oldPrice: rubles(sku.oldPriceKopecks) } : {}),
+    })),
     fit: fitOf(colorway.product.category.slug),
     price: rubles(priced.priceKopecks),
+    priceFrom: new Set(displaySkus.map((sku) => sku.priceKopecks)).size > 1,
     description: colorway.product.description ?? undefined,
   };
   if (priced.oldPriceKopecks != null && priced.oldPriceKopecks > priced.priceKopecks)

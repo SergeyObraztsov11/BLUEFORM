@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { SearchW400 as Search } from '@material-symbols-svg/vue/sharp/icons/search';
-import { catalogProducts, fabrics } from '~/data/catalog';
 import { useDismissableLayer } from '~/composables/useDismissableLayer';
 
 const query = defineModel<string>({ required: true });
@@ -9,18 +8,19 @@ const draft = ref(query.value);
 const suggestionDismissed = ref(Boolean(query.value.trim()));
 const root = ref<HTMLElement | null>(null);
 
-const suggestionOptions = [
-  ...[...new Set(catalogProducts.map((product) => product.name))].map((label) => ({
+const { data: options } = await useCatalogOptions();
+const suggestionOptions = computed(() => [
+  ...(options.value?.products ?? []).map((label) => ({
     label,
     kind: 'Товар',
     hex: '',
   })),
-  ...fabrics.map((fabric) => ({ label: fabric.name, kind: 'Цвет', hex: fabric.hex })),
-];
+  ...(options.value?.colors ?? []).map((fabric) => ({ label: fabric.name, kind: 'Цвет', hex: fabric.hex })),
+]);
 const suggestions = computed(() => {
   const typed = draft.value.trim().toLocaleLowerCase('ru-RU').replaceAll('ё', 'е');
   if (!typed) return [];
-  return suggestionOptions
+  return suggestionOptions.value
     .filter((option) => option.label.toLocaleLowerCase('ru-RU').replaceAll('ё', 'е').includes(typed))
     .slice(0, 5);
 });

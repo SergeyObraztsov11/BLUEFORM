@@ -22,6 +22,8 @@ export interface CatalogFilterState {
 export interface CatalogSize {
   code: string;
   stock: number;
+  price?: number;
+  oldPrice?: number;
 }
 
 export interface CatalogPage {
@@ -40,9 +42,11 @@ export interface CatalogProduct {
   category: CatalogAudience;
   categorySlug: CatalogCategorySlug;
   shade: string;
+  shadeHex?: string;
   sizes: CatalogSize[];
   fit: string;
   price: number;
+  priceFrom?: boolean;
   oldPrice?: number;
   description?: string;
   model?: {

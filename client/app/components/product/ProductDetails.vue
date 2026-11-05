@@ -25,9 +25,16 @@ watch(
   },
 );
 
-const shadeHex = computed(() => fabrics.find((fabric) => fabric.name === props.product.shade)?.hex);
+const shadeHex = computed(
+  () => props.product.shadeHex ?? fabrics.find((fabric) => fabric.name === props.product.shade)?.hex,
+);
+const selectedVariant = computed(() => props.product.sizes.find((size) => size.code === selectedSize.value));
+const displayPrice = computed(() => selectedVariant.value?.price ?? props.product.price);
+const displayOldPrice = computed(() =>
+  selectedVariant.value ? selectedVariant.value.oldPrice : props.product.oldPrice,
+);
 const hasDiscount = computed(
-  () => props.product.oldPrice != null && props.product.oldPrice > props.product.price,
+  () => displayOldPrice.value != null && displayOldPrice.value > displayPrice.value,
 );
 const soldOut = computed(() => props.product.sizes.every((size) => size.stock < 1));
 const selectedQuantity = computed(() =>
@@ -125,10 +132,11 @@ async function onFavorite() {
         <strong
           class="text-[1.75rem] font-bold leading-none md:text-3xl"
           :class="soldOut ? 'text-ink/40' : hasDiscount ? 'text-sale' : 'text-ink'"
-          >{{ product.price.toLocaleString('ru-RU') }} ₽</strong
+          >{{ !selectedSize && product.priceFrom ? 'от ' : ''
+          }}{{ displayPrice.toLocaleString('ru-RU') }} ₽</strong
         >
         <del v-if="hasDiscount" class="text-base text-ink/45"
-          >{{ product.oldPrice?.toLocaleString('ru-RU') }} ₽</del
+          >{{ displayOldPrice?.toLocaleString('ru-RU') }} ₽</del
         >
       </div>
 
