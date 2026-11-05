@@ -13,6 +13,7 @@ export default defineNuxtConfig({
     publicAssets: [{ baseURL: '/swagger-ui', dir: 'node_modules/swagger-ui-dist', maxAge: 60 * 60 * 24 }],
   },
   vite: {
+    server: { allowedHosts: ['web'] },
     plugins: [tailwindcss()],
     optimizeDeps: {
       include: ['better-auth/vue', 'better-auth/client/plugins'],

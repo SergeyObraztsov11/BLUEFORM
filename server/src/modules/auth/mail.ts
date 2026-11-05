@@ -1,8 +1,12 @@
 import nodemailer from 'nodemailer';
+import { mailAttempts } from '../../metrics.js';
 
 export async function sendVerificationCode(email: string, otp: string) {
   const host = process.env.SMTP_HOST;
-  if (!host) throw new Error('SMTP_HOST is required to send verification codes');
+  if (!host) {
+    mailAttempts.inc({ outcome: 'error' });
+    throw new Error('SMTP_HOST is required to send verification codes');
+  }
 
   const port = Number(process.env.SMTP_PORT || 1025);
   const user = process.env.SMTP_USER;
@@ -13,10 +17,16 @@ export async function sendVerificationCode(email: string, otp: string) {
     secure: port === 465,
     auth: user ? { user, pass } : undefined,
   });
-  await transporter.sendMail({
-    from: process.env.SMTP_FROM || 'BLUEFORM <noreply@blueform.local>',
-    to: email,
-    subject: 'Код подтверждения BLUEFORM',
-    text: `Код подтверждения BLUEFORM: ${otp}. Он действует 5 минут.`,
-  });
+  try {
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || 'BLUEFORM <noreply@blueform.local>',
+      to: email,
+      subject: 'Код подтверждения BLUEFORM',
+      text: `Код подтверждения BLUEFORM: ${otp}. Он действует 5 минут.`,
+    });
+    mailAttempts.inc({ outcome: 'success' });
+  } catch (error) {
+    mailAttempts.inc({ outcome: 'error' });
+    throw error;
+  }
 }
