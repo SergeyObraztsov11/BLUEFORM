@@ -177,7 +177,7 @@ export default {
                   sku.oldPriceKopecks <= sku.priceKopecks ||
                   sku.oldPriceKopecks > 2147483647)
               )
-                invalid('Старая цена должна быть больше текущей');
+                invalid('Цена со скидкой должна быть меньше обычной цены');
               if (!(await tx('sizes').where({ id: sku.sizeId, systemId: system.id }).first()))
                 invalid('Размер не относится к размерной сетке товара');
               const values = {

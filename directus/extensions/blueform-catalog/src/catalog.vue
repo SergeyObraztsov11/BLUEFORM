@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
 import { useApi } from '@directus/extensions-sdk';
+import { pricesFromKopecks, pricesToKopecks, type PriceInput } from './pricing';
 
 type Option = {
   id: string;
@@ -26,8 +27,8 @@ type Image = {
 type Sku = {
   id?: string;
   sizeId: string;
-  price: number | null;
-  oldPrice: number | null;
+  regularPrice: PriceInput;
+  salePrice: PriceInput;
   stock: number;
   originalStock: number;
   active: boolean;
@@ -38,7 +39,7 @@ type Color = {
   status: string;
   images: Image[];
   skus: Sku[];
-  newPrice: number | null;
+  newRegularPrice: PriceInput;
 };
 type Product = {
   id?: string;
@@ -71,8 +72,6 @@ const leafCategories = computed(() =>
 const selectedSizes = computed(() =>
   sizes.value.filter((size) => size.systemId === product.value?.sizeSystemId),
 );
-const money = (amount: number | string | null) =>
-  amount === '' || amount == null ? null : Math.round(Number(amount) * 100);
 
 function message(cause: any) {
   return (
@@ -155,12 +154,13 @@ async function openProduct(id: string, afterSave = false) {
         fabricId: color.fabricId,
         status: color.status,
         images: color.images,
-        newPrice: color.skus[0]?.priceKopecks / 100 || null,
+        newRegularPrice: color.skus.length
+          ? (color.skus[0].oldPriceKopecks ?? color.skus[0].priceKopecks) / 100
+          : null,
         skus: color.skus.map((sku: any) => ({
           id: sku.id,
           sizeId: sku.sizeId,
-          price: sku.priceKopecks / 100,
-          oldPrice: sku.oldPriceKopecks == null ? null : sku.oldPriceKopecks / 100,
+          ...pricesFromKopecks(sku.priceKopecks, sku.oldPriceKopecks),
           stock: sku.stockQuantity,
           originalStock: sku.stockQuantity,
           active: sku.isActive,
@@ -180,7 +180,7 @@ async function openProduct(id: string, afterSave = false) {
   }
 }
 function addColor() {
-  product.value?.colors.push({ fabricId: '', status: 'DRAFT', images: [], skus: [], newPrice: null });
+  product.value?.colors.push({ fabricId: '', status: 'DRAFT', images: [], skus: [], newRegularPrice: null });
 }
 function skuFor(color: Color, sizeId: string) {
   return color.skus.find((sku) => sku.sizeId === sizeId);
@@ -192,8 +192,8 @@ function toggleSize(color: Color, sizeId: string, enabled: boolean) {
   else if (enabled)
     color.skus.push({
       sizeId,
-      price: color.newPrice,
-      oldPrice: null,
+      regularPrice: color.newRegularPrice,
+      salePrice: null,
       stock: 0,
       originalStock: 0,
       active: true,
@@ -241,6 +241,17 @@ async function save(status: string) {
     error.value = 'Укажите название и категорию товара.';
     return;
   }
+  for (const color of item.colors) {
+    for (const sku of color.skus) {
+      try {
+        pricesToKopecks(sku.regularPrice, sku.salePrice);
+      } catch (cause) {
+        const size = sizes.value.find((entry) => entry.id === sku.sizeId)?.code || '';
+        error.value = `Размер ${size}: ${cause instanceof Error ? cause.message : 'Проверьте цены.'}`;
+        return;
+      }
+    }
+  }
   const colors = item.colors.map((color) => ({
     id: color.id,
     fabricId: color.fabricId,
@@ -249,8 +260,7 @@ async function save(status: string) {
     skus: color.skus.map((sku) => ({
       id: sku.id,
       sizeId: sku.sizeId,
-      priceKopecks: money(sku.price),
-      oldPriceKopecks: money(sku.oldPrice),
+      ...pricesToKopecks(sku.regularPrice, sku.salePrice),
       stockQuantity: Number(sku.stock),
       originalStock: sku.originalStock,
       isActive: sku.active,
@@ -443,9 +453,9 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', warnBeforeUnloa
               <div class="sizes-heading">
                 <h3>Размеры и цены</h3>
                 <label class="base-price"
-                  >Цена для новых размеров, ₽
+                  >Обычная цена для новых размеров, ₽
                   <input
-                    v-model.number="color.newPrice"
+                    v-model.number="color.newRegularPrice"
                     class="input"
                     type="number"
                     min="0.01"
@@ -453,14 +463,18 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', warnBeforeUnloa
                     placeholder="7 890"
                 /></label>
               </div>
+              <p class="muted price-hint">
+                Укажите обычную цену. Цена со скидкой необязательна: если заполнить её, покупатель заплатит
+                именно её.
+              </p>
               <div class="table-wrap">
                 <table>
                   <thead>
                     <tr>
                       <th>Размер</th>
                       <th>Доступен</th>
-                      <th>Цена, ₽</th>
-                      <th>Цена до скидки, ₽</th>
+                      <th>Обычная цена, ₽</th>
+                      <th class="sale-heading">Цена со скидкой, ₽</th>
                       <th>Остаток, шт.</th>
                     </tr>
                   </thead>
@@ -478,22 +492,23 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', warnBeforeUnloa
                       <template v-if="skuFor(color, size.id)"
                         ><td>
                           <input
-                            v-model.number="skuFor(color, size.id)!.price"
+                            v-model.number="skuFor(color, size.id)!.regularPrice"
                             class="input small"
                             type="number"
                             min="0.01"
                             step="0.01"
-                            :aria-label="`Цена размера ${size.code}`"
+                            :aria-label="`Обычная цена размера ${size.code}`"
                           />
                         </td>
                         <td>
                           <input
-                            v-model.number="skuFor(color, size.id)!.oldPrice"
-                            class="input small"
+                            v-model.number="skuFor(color, size.id)!.salePrice"
+                            class="input small sale-input"
+                            placeholder="Нет скидки"
                             type="number"
                             min="0.01"
                             step="0.01"
-                            :aria-label="`Старая цена размера ${size.code}`"
+                            :aria-label="`Цена со скидкой размера ${size.code}`"
                           />
                         </td>
                         <td>
@@ -748,6 +763,21 @@ button:focus-visible {
   text-align: left;
   cursor: pointer;
   font-size: 12px;
+}
+.price-hint {
+  margin: 0 0 12px;
+}
+.sale-heading {
+  color: #b42318;
+}
+.input.sale-input {
+  border-color: #e9aaa4;
+  background: #fff5f4;
+  color: #842118;
+}
+.input.sale-input::placeholder {
+  color: #935e59;
+  opacity: 1;
 }
 .base-price {
   font-size: 13px;
