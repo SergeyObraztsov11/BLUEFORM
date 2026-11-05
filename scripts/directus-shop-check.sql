@@ -4,7 +4,15 @@ BEGIN
     OR NOT has_table_privilege('blueform_directus_shop', 'order_items', 'SELECT') THEN
     RAISE EXCEPTION 'Directus must be able to read orders';
   END IF;
-  IF has_table_privilege('blueform_directus_shop', 'orders', 'INSERT')
+  IF NOT has_table_privilege('blueform_directus_shop', 'products', 'INSERT')
+    OR NOT has_table_privilege('blueform_directus_shop', 'product_colorways', 'INSERT')
+    OR NOT has_table_privilege('blueform_directus_shop', 'skus', 'UPDATE') THEN
+    RAISE EXCEPTION 'Directus must be able to manage catalog entries';
+  END IF;
+  IF has_table_privilege('blueform_directus_shop', 'products', 'DELETE')
+    OR has_table_privilege('blueform_directus_shop', 'product_colorways', 'DELETE')
+    OR has_table_privilege('blueform_directus_shop', 'skus', 'DELETE')
+    OR has_table_privilege('blueform_directus_shop', 'orders', 'INSERT')
     OR has_table_privilege('blueform_directus_shop', 'orders', 'UPDATE')
     OR has_table_privilege('blueform_directus_shop', 'orders', 'DELETE')
     OR has_table_privilege('blueform_directus_shop', 'order_items', 'INSERT')
