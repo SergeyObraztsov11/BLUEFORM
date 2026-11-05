@@ -66,6 +66,66 @@
       }
     },
     {
+      "id": 15,
+      "title": "HTTP-ответы по группам статусов",
+      "description": "Суммарное приблизительное количество ответов магазина и API за выбранный период. Значения рассчитываются Prometheus по накопленным счётчикам.",
+      "type": "barchart",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "round(sum(increase(blueform_http_request_duration_seconds_count{status=~\"2..\"}[$__range])) or vector(0))",
+          "refId": "A",
+          "legendFormat": "2xx",
+          "instant": true
+        },
+        {
+          "expr": "round(sum(increase(blueform_http_request_duration_seconds_count{status=~\"4..\"}[$__range])) or vector(0))",
+          "refId": "B",
+          "legendFormat": "4xx",
+          "instant": true
+        },
+        {
+          "expr": "round(sum(increase(blueform_http_request_duration_seconds_count{status=~\"5..\"}[$__range])) or vector(0))",
+          "refId": "C",
+          "legendFormat": "5xx",
+          "instant": true
+        }
+      ],
+      "transformations": [
+        {
+          "id": "seriesToRows",
+          "options": {}
+        }
+      ],
+      "options": {
+        "orientation": "horizontal",
+        "showValue": "always",
+        "legend": {
+          "showLegend": false
+        },
+        "xTickLabelRotation": 0,
+        "barWidth": 0.65,
+        "groupWidth": 0.7
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "min": 0
+        },
+        "overrides": []
+      }
+    },
+    {
       "id": 3,
       "title": "HTTP запросы в секунду",
       "type": "timeseries",
@@ -75,7 +135,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 8,
+        "y": 16,
         "w": 12,
         "h": 8
       },
@@ -103,7 +163,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 8,
+        "y": 16,
         "w": 12,
         "h": 8
       },
@@ -131,7 +191,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 16,
+        "y": 24,
         "w": 12,
         "h": 8
       },
@@ -159,7 +219,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 16,
+        "y": 24,
         "w": 12,
         "h": 8
       },
@@ -187,7 +247,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 24,
+        "y": 32,
         "w": 12,
         "h": 8
       },
@@ -215,7 +275,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 24,
+        "y": 32,
         "w": 12,
         "h": 8
       },
@@ -243,7 +303,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 48,
+        "y": 56,
         "w": 24,
         "h": 10
       },
@@ -271,7 +331,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 32,
+        "y": 40,
         "w": 8,
         "h": 8
       },
@@ -298,7 +358,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 32,
+        "y": 40,
         "w": 8,
         "h": 8
       },
@@ -325,7 +385,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 32,
+        "y": 40,
         "w": 8,
         "h": 8
       },
@@ -352,7 +412,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 40,
+        "y": 48,
         "w": 12,
         "h": 8
       },
@@ -379,7 +439,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 40,
+        "y": 48,
         "w": 12,
         "h": 8
       },
