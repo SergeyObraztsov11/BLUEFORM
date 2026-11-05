@@ -19,6 +19,9 @@ export const productSchema = z
     name: z.string(),
     image: z.string().optional(),
     imageKind: z.enum(['fabric', 'product']).optional(),
+    images: z
+      .array(z.object({ src: z.string(), kind: z.enum(['fabric', 'product']), alt: z.string() }))
+      .optional(),
     category: z.enum(['women', 'men']),
     categorySlug: z.string(),
     shade: z.string(),

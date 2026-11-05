@@ -21,6 +21,7 @@ enum ProductStatus {
 enum MediaSource {
   STATIC
   S3
+  DIRECTUS
 }
 
 enum ProductImageKind {

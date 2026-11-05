@@ -25,6 +25,7 @@ services:
       retries: 12
       start_period: 30s
     volumes:
+      - directus_shop_uploads:/directus-uploads:ro
       - ./server/src:/app/server/src
       - ./prisma/schema.prisma:/app/prisma/schema.prisma:ro
       - ./shared:/app/shared:ro
@@ -154,7 +155,7 @@ services:
     command:
       - |
         for attempt in $$(seq 1 120); do
-          if [ "$$(psql -Atqc "SELECT count(*) FROM _prisma_migrations WHERE migration_name = '20261105130000_directus_catalog' AND finished_at IS NOT NULL AND rolled_back_at IS NULL" 2>/dev/null || true)" = 1 ]; then
+          if [ "$$(psql -Atqc "SELECT count(*) FROM _prisma_migrations WHERE migration_name = '20261106100000_directus_media' AND finished_at IS NOT NULL AND rolled_back_at IS NULL" 2>/dev/null || true)" = 1 ]; then
             exec psql -v directus_password="$$DIRECTUS_SHOP_DB_PASSWORD" -f /directus-shop-init.sql
           fi
           sleep 2
@@ -169,7 +170,9 @@ services:
 
   directus-shop:
     profiles: [admin]
-    image: directus/directus:11.14.1
+    build:
+      context: .
+      dockerfile: directus/Dockerfile
     ports:
       - '127.0.0.1:8058:8055'
     environment:
@@ -185,6 +188,7 @@ services:
       PUBLIC_URL: http://localhost:8058
     volumes:
       - directus_shop_uploads:/directus/uploads
+      - ./client/public:/blueform-static:ro
     depends_on:
       directus-shop-init:
         condition: service_completed_successfully

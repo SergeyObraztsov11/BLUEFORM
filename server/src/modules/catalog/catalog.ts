@@ -22,6 +22,7 @@ export type CatalogCard = {
   name: string;
   image?: string;
   imageKind?: 'fabric' | 'product';
+  images?: { src: string; kind: 'fabric' | 'product'; alt: string }[];
   category: 'women' | 'men';
   categorySlug: string;
   shade: string;
@@ -60,7 +61,12 @@ export function toCatalogCard(
     }, null);
   if (!priced) return null;
 
-  const image = colorway.images.find((item) => item.mediaFile.source === 'STATIC');
+  const images = colorway.images.filter(
+    (item) =>
+      item.mediaFile.source === 'STATIC' ||
+      (item.mediaFile.source === 'DIRECTUS' && item.mediaFile.storageKey.startsWith('directus/')),
+  );
+  const image = images[0];
   const category = colorway.product.category as CategoryNode;
   const card: CatalogCard = {
     id: colorway.id,
@@ -76,8 +82,19 @@ export function toCatalogCard(
   if (priced.oldPriceKopecks != null && priced.oldPriceKopecks > priced.priceKopecks)
     card.oldPrice = rubles(priced.oldPriceKopecks);
   if (image) {
-    card.image = `/${image.mediaFile.storageKey.replace(/^\//, '')}`;
+    card.image =
+      image.mediaFile.source === 'STATIC'
+        ? `/${image.mediaFile.storageKey.replace(/^\//, '')}`
+        : `/api/catalog/images/${image.mediaFile.id}`;
     card.imageKind = image.kind === 'TEXTURE' ? 'fabric' : 'product';
+    card.images = images.map((item) => ({
+      src:
+        item.mediaFile.source === 'STATIC'
+          ? `/${item.mediaFile.storageKey.replace(/^\//, '')}`
+          : `/api/catalog/images/${item.mediaFile.id}`,
+      kind: item.kind === 'TEXTURE' ? 'fabric' : 'product',
+      alt: item.alt,
+    }));
   }
   if (colorway.modelHeightCm != null && colorway.modelWornSizeCode) {
     card.model = {
