@@ -262,6 +262,7 @@ test('authentication, session compatibility and guest cart merge', { timeout: 60
     );
     assert.equal(order.status, 409, 'checkout must reject the complete order when a position exceeds stock');
     const user = await prisma.user.findUniqueOrThrow({ where: { email } });
+    await prisma.favorite.create({ data: { userId: user.id, colorwayId: colorway.id } });
     assert.equal(
       await prisma.order.count({ where: { userId: user.id } }),
       0,
@@ -283,6 +284,12 @@ test('authentication, session compatibility and guest cart merge', { timeout: 60
       };
       assert.equal(unavailable.items[0]?.product.sizes.find((entry) => entry.code === size.code)?.stock, 0);
       assert.equal(unavailable.items[0]?.lineTotal, 0);
+      const favorites = (await (await fetch(`${shop}/api/favorites`, { headers: { cookie } })).json()) as {
+        items: { id: string; sizes: { stock: number }[] }[];
+      };
+      assert.ok(
+        favorites.items.find((item) => item.id === colorway.id)?.sizes.every((entry) => entry.stock === 0),
+      );
       const hiddenProduct = await fetch(`${shop}/api/catalog/products/${encodeURIComponent(colorway.id)}`);
       assert.equal(hiddenProduct.status, 200);
       const hidden = (await hiddenProduct.json()) as { sizes: { stock: number }[] };
