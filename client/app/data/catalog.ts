@@ -36,6 +36,7 @@ export interface CatalogProduct {
   name: string;
   image?: string;
   imageKind?: 'fabric' | 'product';
+  images?: { src: string; kind: 'fabric' | 'product'; alt: string }[];
   category: CatalogAudience;
   categorySlug: CatalogCategorySlug;
   shade: string;

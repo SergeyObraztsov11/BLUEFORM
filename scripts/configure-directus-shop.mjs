@@ -28,10 +28,21 @@ for (let attempt = 0; attempt < 60; attempt++) {
   }
 }
 
+const settings = (await request('/settings?fields=module_bar', { token })).data;
+const moduleBar =
+  settings.module_bar ??
+  ['content', 'users', 'files', 'insights', 'docs', 'settings'].map((id) => ({
+    type: 'module',
+    id,
+    enabled: true,
+  }));
+if (!moduleBar.some((item) => item.type === 'module' && item.id === 'blueform-catalog')) {
+  moduleBar.unshift({ type: 'module', id: 'blueform-catalog', enabled: true });
+}
 await request('/settings', {
   method: 'PATCH',
   token,
-  body: { project_name: 'BLUEFORM', default_language: 'ru-RU' },
+  body: { project_name: 'BLUEFORM', default_language: 'ru-RU', module_bar: moduleBar },
 });
 
 const collections = [
@@ -120,6 +131,7 @@ const productStatusChoices = [
 const catalogCollections = [
   {
     name: 'products',
+    hidden: true,
     label: 'Товары',
     icon: 'checkroom',
     template: '{{name}}',
@@ -134,6 +146,7 @@ const catalogCollections = [
   },
   {
     name: 'product_colorways',
+    hidden: true,
     label: 'Цвета товаров',
     icon: 'palette',
     template: '{{productId.name}} — {{fabricId.colorName}}',
@@ -149,6 +162,7 @@ const catalogCollections = [
   },
   {
     name: 'skus',
+    hidden: true,
     label: 'Размеры и цены',
     icon: 'straighten',
     template: '{{colorwayId.productId.name}} — {{colorwayId.fabricId.colorName}} — {{sizeId.code}}',

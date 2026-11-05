@@ -15,11 +15,13 @@ const cart = useCartStore();
 const favorites = useFavoritesStore();
 const selectedSize = ref('');
 const actionError = ref<string | null>(null);
+const selectedImage = ref(0);
 
 watch(
   () => props.product.id,
   () => {
     selectedSize.value = '';
+    selectedImage.value = 0;
   },
 );
 
@@ -59,18 +61,40 @@ async function onFavorite() {
 
 <template>
   <section class="grid gap-5 md:grid-cols-[minmax(0,1fr)_minmax(0,0.88fr)] md:gap-10 lg:gap-16">
-    <div
-      class="relative h-[min(36svh,420px)] w-full overflow-hidden bg-[#f2f5f9] sm:aspect-[4/5] sm:h-auto sm:max-h-[620px] md:sticky md:top-24"
-    >
-      <img
-        :src="productImage(product)"
-        :alt="productImageAlt(product)"
-        class="h-full w-full"
-        :class="[
-          product.imageKind === 'fabric' || !product.image ? 'object-cover' : 'object-contain',
-          soldOut ? 'grayscale opacity-55' : '',
-        ]"
-      />
+    <div class="self-start md:sticky md:top-24">
+      <div
+        class="relative h-[min(36svh,420px)] w-full overflow-hidden bg-[#f2f5f9] sm:aspect-[4/5] sm:h-auto sm:max-h-[620px]"
+      >
+        <img
+          :src="product.images?.[selectedImage]?.src || productImage(product)"
+          :alt="product.images?.[selectedImage]?.alt || productImageAlt(product)"
+          class="h-full w-full"
+          :class="[
+            (product.images?.[selectedImage]?.kind || product.imageKind) === 'fabric' || !product.image
+              ? 'object-cover'
+              : 'object-contain',
+            soldOut ? 'grayscale opacity-55' : '',
+          ]"
+        />
+      </div>
+      <div
+        v-if="product.images && product.images.length > 1"
+        class="mt-3 flex gap-2 overflow-x-auto"
+        aria-label="Фотографии товара"
+      >
+        <button
+          v-for="(image, index) in product.images"
+          :key="image.src"
+          type="button"
+          class="size-16 shrink-0 overflow-hidden border-2 bg-[#f2f5f9] focus-visible:outline-2 focus-visible:outline-offset-2"
+          :class="selectedImage === index ? 'border-ink' : 'border-transparent'"
+          :aria-label="`Фотография ${index + 1}`"
+          :aria-pressed="selectedImage === index"
+          @click="selectedImage = index"
+        >
+          <img :src="image.src" :alt="image.alt" class="size-full object-cover" />
+        </button>
+      </div>
     </div>
 
     <div class="min-w-0 md:py-4">

@@ -3,10 +3,41 @@ import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 import { getCategories, getProducts, getProductById } from './controller.js';
 import { catalogErrorSchema, categoryListSchema, productPageSchema, productSchema } from './schema.js';
+import { database } from '../../database.js';
+import path from 'node:path';
 
 export function createCatalogModule() {
   const router = Router();
   const registry = new OpenAPIRegistry();
+  router.get('/api/catalog/images/:id', async (req, res, next) => {
+    try {
+      const image = await database().productImage.findFirst({
+        where: {
+          mediaFileId: req.params.id,
+          colorway: { status: 'PUBLISHED', product: { status: 'PUBLISHED' } },
+        },
+        include: { mediaFile: true },
+      });
+      const key = image?.mediaFile.storageKey;
+      if (
+        !image ||
+        image.mediaFile.source !== 'DIRECTUS' ||
+        !key ||
+        !/^directus\/[a-f0-9-]+\.[a-z0-9]+$/i.test(key)
+      )
+        return res.sendStatus(404);
+      const directory = process.env.DIRECTUS_SHOP_UPLOADS || '/directus-uploads';
+      res.set({
+        'X-Content-Type-Options': 'nosniff',
+        'Content-Security-Policy': "default-src 'none'; sandbox",
+      });
+      res.type(image.mediaFile.mimeType).sendFile(path.basename(key), { root: directory }, (error) => {
+        if (error && !res.headersSent) next(error);
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
   registry.registerPath({
     method: 'get',
     path: '/api/catalog/categories',

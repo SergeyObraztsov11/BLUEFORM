@@ -1,0 +1,19 @@
+{
+  "name": "directus-extension-blueform-catalog",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "directus-extension build"
+  },
+  "devDependencies": {
+    "@directus/extensions-sdk": "^13.1.1",
+    "typescript": "^5.9.3",
+    "vue": "^3.5.45"
+  },
+  "directus:extension": {
+    "type": "module",
+    "path": "dist/index.js",
+    "source": "src/index.ts",
+    "host": "^11.0.0"
+  }
+}
