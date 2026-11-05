@@ -65,7 +65,9 @@ async function onFavorite() {
   actionError.value = await favorites.toggleFavorite(props.product.id);
 }
 
-const shadeHex = computed(() => fabrics.find((fabric) => fabric.name === props.product?.shade)?.hex);
+const shadeHex = computed(
+  () => props.product?.shadeHex ?? fabrics.find((fabric) => fabric.name === props.product?.shade)?.hex,
+);
 const formattedPrice = computed(() => props.product?.price.toLocaleString('ru-RU'));
 const hasDiscount = computed(
   () => props.product?.oldPrice != null && props.product.oldPrice > props.product.price,
@@ -130,7 +132,7 @@ const discountPercent = computed(() => {
         class="flex items-baseline gap-2 whitespace-nowrap text-base font-bold leading-6"
         :class="soldOut ? 'text-ink/40' : hasDiscount ? 'text-sale' : 'text-ink'"
       >
-        {{ formattedPrice }} ₽
+        {{ product.priceFrom ? 'от ' : '' }}{{ formattedPrice }} ₽
         <del v-if="hasDiscount" class="text-sm font-normal" :class="soldOut ? 'text-ink/30' : 'text-ink/45'"
           >{{ formattedOldPrice }} ₽</del
         >

@@ -2,12 +2,15 @@
 import { computed, ref } from 'vue';
 import { CloseW400 as Close } from '@material-symbols-svg/vue/sharp/icons/close';
 import { KeyboardArrowDownW400 as KeyboardArrowDown } from '@material-symbols-svg/vue/sharp/icons/keyboard-arrow-down';
-import { emptyCatalogFilters, fabrics, russianSizes } from '~/data/catalog';
+import { emptyCatalogFilters } from '~/data/catalog';
 import type { CatalogFilterState, CatalogSort } from '~/data/catalog';
 
 type FilterKey = 'shade' | 'size' | 'price' | 'sort';
 
 const model = defineModel<CatalogFilterState>({ required: true });
+const { data: options } = await useCatalogOptions();
+const fabrics = computed(() => options.value?.colors ?? []);
+const russianSizes = computed(() => options.value?.sizes ?? []);
 const emit = defineEmits<{ reset: [] }>();
 const activeMenu = ref<FilterKey | null>(null);
 const priceMin = ref<string | number>('');
@@ -81,7 +84,7 @@ function toggleSize(size: string) {
   const selected = model.value.sizes.includes(size)
     ? model.value.sizes.filter((value) => value !== size)
     : [...model.value.sizes, size];
-  model.value = { ...model.value, sizes: russianSizes.filter((value) => selected.includes(value)) };
+  model.value = { ...model.value, sizes: russianSizes.value.filter((value) => selected.includes(value)) };
 }
 
 function applyPrice() {

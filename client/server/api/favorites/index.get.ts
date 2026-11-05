@@ -13,6 +13,12 @@ export default defineEventHandler(async (event) => {
   return {
     items: favorites.flatMap((favorite) => {
       const card = toCatalogCard(favorite.colorway);
+      if (
+        card &&
+        (favorite.colorway.status !== 'PUBLISHED' || favorite.colorway.product.status !== 'PUBLISHED')
+      ) {
+        card.sizes = card.sizes.map((size) => ({ ...size, stock: 0 }));
+      }
       return card ? [card] : [];
     }),
   };

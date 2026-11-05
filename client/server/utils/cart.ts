@@ -31,12 +31,17 @@ export function toCartResponse(cart: CartRecord | null) {
     );
     if (!card) return [];
     const price = rubles(item.sku.priceKopecks);
-    const inStock = item.sku.stockQuantity > 0;
+    const available =
+      item.sku.isActive &&
+      item.sku.colorway.status === 'PUBLISHED' &&
+      item.sku.colorway.product.status === 'PUBLISHED';
+    const inStock = available && item.sku.stockQuantity > 0;
     return [
       {
         key: item.id,
         product: {
           ...card,
+          sizes: available ? card.sizes : card.sizes.map((size) => ({ ...size, stock: 0 })),
           price,
           oldPrice:
             item.sku.oldPriceKopecks != null && item.sku.oldPriceKopecks > item.sku.priceKopecks

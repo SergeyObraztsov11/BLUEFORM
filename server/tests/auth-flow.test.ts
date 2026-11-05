@@ -115,6 +115,9 @@ test('authentication, session compatibility and guest cart merge', { timeout: 60
     const size = await prisma.size.create({
       data: { id: `${fixture}-size`, systemId: system.id, code: 'TEST' },
     });
+    const otherSize = await prisma.size.create({
+      data: { id: `${fixture}-size-2`, systemId: system.id, code: 'TEST2' },
+    });
     const fabric = await prisma.fabric.create({
       data: {
         id: `${fixture}-fabric`,
@@ -130,7 +133,7 @@ test('authentication, session compatibility and guest cart merge', { timeout: 60
         id: `${fixture}-product`,
         categoryId: category.id,
         sizeSystemId: system.id,
-        name: 'Test',
+        name: `Test ${fixture}`,
         slug: `${fixture}-product`,
         status: 'PUBLISHED',
       },
@@ -156,6 +159,32 @@ test('authentication, session compatibility and guest cart merge', { timeout: 60
         stockQuantity: 1,
       },
     });
+    await prisma.sku.create({
+      data: {
+        id: `${fixture}-sku-2`,
+        colorwayId: colorway.id,
+        sizeSystemId: system.id,
+        sizeId: otherSize.id,
+        skuCode: `${fixture}-sku-2`,
+        priceKopecks: 15000,
+        stockQuantity: 2,
+      },
+    });
+    const productResponse = await fetch(`${shop}/api/catalog/products/${encodeURIComponent(colorway.id)}`);
+    const productCard = (await productResponse.json()) as {
+      price: number;
+      priceFrom: boolean;
+      sizes: { code: string; price: number }[];
+    };
+    assert.equal(productCard.price, 100);
+    assert.equal(productCard.priceFrom, true);
+    assert.equal(productCard.sizes.find((entry) => entry.code === otherSize.code)?.price, 150);
+    const publishedOptions = (await (await fetch(`${shop}/api/catalog/options`)).json()) as {
+      products: string[];
+      sizes: string[];
+    };
+    assert.ok(publishedOptions.products.includes(product.name));
+    assert.ok(publishedOptions.sizes.includes(otherSize.code));
 
     const userAdd = await request('/api/cart/items', { colorwayId: colorway.id, size: size.code }, cookie);
     assert.equal(userAdd.status, 200, 'account cart should accept the fixture');
@@ -233,6 +262,7 @@ test('authentication, session compatibility and guest cart merge', { timeout: 60
     );
     assert.equal(order.status, 409, 'checkout must reject the complete order when a position exceeds stock');
     const user = await prisma.user.findUniqueOrThrow({ where: { email } });
+    await prisma.favorite.create({ data: { userId: user.id, colorwayId: colorway.id } });
     assert.equal(
       await prisma.order.count({ where: { userId: user.id } }),
       0,
@@ -244,6 +274,55 @@ test('authentication, session compatibility and guest cart merge', { timeout: 60
       body: JSON.stringify({ quantity: 1 }),
     });
     assert.equal(reduce.status, 200, 'buyer should be able to reduce the merged quantity');
+    for (const target of ['product', 'colorway'] as const) {
+      if (target === 'product')
+        await prisma.product.update({ where: { id: product.id }, data: { status: 'ARCHIVED' } });
+      else await prisma.productColorway.update({ where: { id: colorway.id }, data: { status: 'ARCHIVED' } });
+      const unavailableCart = await fetch(`${shop}/api/cart`, { headers: { cookie } });
+      const unavailable = (await unavailableCart.json()) as {
+        items: { product: { sizes: { code: string; stock: number }[] }; lineTotal: number }[];
+      };
+      assert.equal(unavailable.items[0]?.product.sizes.find((entry) => entry.code === size.code)?.stock, 0);
+      assert.equal(unavailable.items[0]?.lineTotal, 0);
+      const favorites = (await (await fetch(`${shop}/api/favorites`, { headers: { cookie } })).json()) as {
+        items: { id: string; sizes: { stock: number }[] }[];
+      };
+      assert.ok(
+        favorites.items.find((item) => item.id === colorway.id)?.sizes.every((entry) => entry.stock === 0),
+      );
+      const hiddenProduct = await fetch(`${shop}/api/catalog/products/${encodeURIComponent(colorway.id)}`);
+      assert.equal(hiddenProduct.status, 200);
+      const hidden = (await hiddenProduct.json()) as { sizes: { stock: number }[] };
+      assert.ok(hidden.sizes.every((entry) => entry.stock === 0));
+      const search = await fetch(`${shop}/api/catalog/products?q=${encodeURIComponent(fixture)}`);
+      const results = (await search.json()) as { items: { id: string }[] };
+      assert.ok(
+        !results.items.some((entry) => entry.id === colorway.id),
+        'unpublished color must not appear in search',
+      );
+      const options = (await (await fetch(`${shop}/api/catalog/options`)).json()) as { products: string[] };
+      assert.ok(!options.products.includes(product.name), 'unpublished product must not be suggested');
+      const rejectedOrder = await request(
+        '/api/orders',
+        {
+          firstName: 'Test',
+          phone: '123456789',
+          email,
+          ...delivery,
+          expectedTotal: 100,
+          idempotencyKey: `test-unpublished-${randomUUID()}`,
+        },
+        cookie,
+      );
+      assert.equal(rejectedOrder.status, 409, `${target} removed from sale must not be ordered`);
+      assert.equal(
+        (await prisma.sku.findUniqueOrThrow({ where: { id: `${fixture}-sku` } })).stockQuantity,
+        1,
+      );
+      if (target === 'product')
+        await prisma.product.update({ where: { id: product.id }, data: { status: 'PUBLISHED' } });
+      else await prisma.productColorway.update({ where: { id: colorway.id }, data: { status: 'PUBLISHED' } });
+    }
     const successfulOrder = await request(
       '/api/orders',
       {
@@ -284,10 +363,12 @@ test('authentication, session compatibility and guest cart merge', { timeout: 60
     await prisma.verification.deleteMany({ where: { identifier: { contains: email } } });
     if (guestTokenHash) await prisma.guestSession.deleteMany({ where: { tokenHash: guestTokenHash } });
     await prisma.sku.deleteMany({ where: { id: `${fixture}-sku` } });
+    await prisma.sku.deleteMany({ where: { id: `${fixture}-sku-2` } });
     await prisma.productColorway.deleteMany({ where: { id: `${fixture}-color` } });
     await prisma.product.deleteMany({ where: { id: `${fixture}-product` } });
     await prisma.fabric.deleteMany({ where: { id: `${fixture}-fabric` } });
     await prisma.size.deleteMany({ where: { id: `${fixture}-size` } });
+    await prisma.size.deleteMany({ where: { id: `${fixture}-size-2` } });
     await prisma.sizeSystem.deleteMany({ where: { id: `${fixture}-system` } });
     await prisma.category.deleteMany({ where: { id: `${fixture}-cat` } });
     if (messageId) await fetch(`http://mailpit:8025/api/v1/message/${messageId}`, { method: 'DELETE' });

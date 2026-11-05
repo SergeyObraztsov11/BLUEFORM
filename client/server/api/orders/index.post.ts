@@ -46,9 +46,22 @@ export default defineEventHandler(async (event) => {
       const items = cart?.items ?? [];
       if (!items.length) apiError('ORDER_CART_EMPTY');
 
+      // Lock publication state until inventory is decremented, so an administrator
+      // cannot unpublish a product in the middle of checkout.
+      const colorwayIds = [...new Set(items.map((item) => item.sku.colorwayId))].sort();
+      await tx.$queryRaw(Prisma.sql`
+        SELECT p.id FROM products p JOIN product_colorways c ON c."productId" = p.id
+        WHERE c.id IN (${Prisma.join(colorwayIds)}) ORDER BY p.id, c.id FOR SHARE OF p, c
+      `);
+
       for (const item of items) {
         const updated = await tx.sku.updateMany({
-          where: { id: item.skuId, isActive: true, stockQuantity: { gte: item.quantity } },
+          where: {
+            id: item.skuId,
+            isActive: true,
+            stockQuantity: { gte: item.quantity },
+            colorway: { status: 'PUBLISHED', product: { status: 'PUBLISHED' } },
+          },
           data: { stockQuantity: { decrement: item.quantity } },
         });
         if (updated.count !== 1) {

@@ -3,13 +3,16 @@ import { computed, ref, watch } from 'vue';
 import { CloseW400 as Close } from '@material-symbols-svg/vue/sharp/icons/close';
 import { FilterListW400 as FilterList } from '@material-symbols-svg/vue/sharp/icons/filter-list';
 import { KeyboardArrowDownW400 as KeyboardArrowDown } from '@material-symbols-svg/vue/sharp/icons/keyboard-arrow-down';
-import { emptyCatalogFilters, fabrics, russianSizes } from '~/data/catalog';
+import { emptyCatalogFilters } from '~/data/catalog';
 import { buildCatalogQuery } from '~/utils/catalogQuery';
 import type { CatalogCategory, CatalogFilterState, CatalogPage, CatalogSort } from '~/data/catalog';
 
 const filters = defineModel<CatalogFilterState>({ required: true });
 const category = defineModel<CatalogCategory>('category', { required: true });
 const props = defineProps<{ search: string }>();
+const { data: options } = await useCatalogOptions();
+const fabrics = computed(() => options.value?.colors ?? []);
+const russianSizes = computed(() => options.value?.sizes ?? []);
 const { data: categoryTree } = await useCatalogCategories();
 const categories = computed(() => categoryTree.value?.items ?? []);
 
@@ -79,7 +82,7 @@ function toggleShade(name: string) {
 function toggleSize(size: string) {
   draft.value.sizes = draft.value.sizes.includes(size)
     ? draft.value.sizes.filter((item) => item !== size)
-    : russianSizes.filter((item) => [...draft.value.sizes, size].includes(item));
+    : russianSizes.value.filter((item) => [...draft.value.sizes, size].includes(item));
 }
 
 function resetDraft() {

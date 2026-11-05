@@ -74,6 +74,33 @@ test('Express is available, connected to the database and documents its routes',
   assert.ok(openapi.paths['/api/catalog/categories']?.get);
   assert.ok(openapi.paths['/api/catalog/products']?.get);
   assert.ok(openapi.paths['/api/catalog/products/{id}']?.get);
+  assert.ok(openapi.paths['/api/catalog/options']?.get);
+});
+
+test('catalogue options and size prices match the public catalogue', async () => {
+  const [options, page] = await Promise.all([
+    getJson<{ colors: { name: string; hex: string }[]; sizes: string[]; products: string[] }>(
+      `${shop}/api/catalog/options`,
+    ),
+    getJson<{
+      items: {
+        name: string;
+        shade: string;
+        price: number;
+        priceFrom: boolean;
+        sizes: { code: string; stock: number; price: number }[];
+      }[];
+    }>(`${shop}/api/catalog/products`),
+  ]);
+  for (const item of page.items) {
+    assert.ok(options.products.includes(item.name));
+    assert.ok(options.colors.some((color) => color.name === item.shade));
+    assert.ok(item.sizes.every((size) => options.sizes.includes(size.code)));
+    const inStock = item.sizes.filter((size) => size.stock > 0);
+    const priceSizes = inStock.length ? inStock : item.sizes;
+    assert.equal(item.price, Math.min(...priceSizes.map((size) => size.price)));
+    assert.equal(item.priceFrom, new Set(priceSizes.map((size) => size.price)).size > 1);
+  }
 });
 
 test('Express categories match the existing shop contract', async () => {
