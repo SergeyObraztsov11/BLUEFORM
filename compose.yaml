@@ -101,7 +101,132 @@ services:
       - '127.0.0.1:8025:8025'
       - '127.0.0.1:1025:1025'
 
+  directus-db:
+    profiles: [observability]
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: directus
+      POSTGRES_USER: directus
+      POSTGRES_PASSWORD: ${DIRECTUS_DB_PASSWORD:-local-only-directus-db}
+    volumes:
+      - directus_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U directus -d directus']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  directus:
+    profiles: [observability]
+    image: directus/directus:11.14.1
+    ports:
+      - '127.0.0.1:8055:8055'
+    environment:
+      SECRET: ${DIRECTUS_SECRET:-local-only-change-directus-secret-please}
+      ADMIN_EMAIL: ${DIRECTUS_ADMIN_EMAIL:-admin@example.com}
+      ADMIN_PASSWORD: ${DIRECTUS_ADMIN_PASSWORD:-BlueformLocal123!}
+      DB_CLIENT: pg
+      DB_HOST: directus-db
+      DB_PORT: '5432'
+      DB_DATABASE: directus
+      DB_USER: directus
+      DB_PASSWORD: ${DIRECTUS_DB_PASSWORD:-local-only-directus-db}
+      PUBLIC_URL: http://localhost:8055
+    volumes:
+      - directus_uploads:/directus/uploads
+    depends_on:
+      directus-db:
+        condition: service_healthy
+
+  prometheus:
+    profiles: [observability]
+    image: prom/prometheus:v3.5.0
+    command: ['--config.file=/etc/prometheus/prometheus.yml', '--storage.tsdb.retention.time=15d']
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - '127.0.0.1:9090:9090'
+
+  blackbox:
+    profiles: [observability]
+    image: prom/blackbox-exporter:v0.27.0
+    volumes:
+      - ./monitoring/blackbox.yml:/etc/blackbox_exporter/config.yml:ro
+
+  postgres-exporter:
+    profiles: [observability]
+    image: prometheuscommunity/postgres-exporter:v0.17.1
+    environment:
+      DATA_SOURCE_URI: db:5432/blueform?sslmode=disable
+      DATA_SOURCE_USER: blueform
+      DATA_SOURCE_PASS: ${POSTGRES_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  cadvisor:
+    profiles: [observability]
+    image: gcr.io/cadvisor/cadvisor:v0.52.1
+    privileged: true
+    devices:
+      - /dev/kmsg:/dev/kmsg
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+
+  node-exporter:
+    profiles: [observability]
+    image: prom/node-exporter:v1.9.1
+    command: ['--path.rootfs=/host']
+    volumes:
+      - /:/host:ro
+
+  loki:
+    profiles: [observability]
+    image: grafana/loki:3.5.5
+    command: ['-config.file=/etc/loki/config.yml']
+    volumes:
+      - ./monitoring/loki.yml:/etc/loki/config.yml:ro
+      - loki_data:/loki
+
+  alloy:
+    profiles: [observability]
+    image: grafana/alloy:v1.10.2
+    command: ['run', '--storage.path=/var/lib/alloy', '/etc/alloy/config.alloy']
+    volumes:
+      - ./monitoring/config.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - alloy_data:/var/lib/alloy
+    depends_on:
+      - loki
+
+  grafana:
+    profiles: [observability]
+    image: grafana/grafana:12.1.1
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-BlueformLocal123!}
+      GF_USERS_ALLOW_SIGN_UP: 'false'
+    ports:
+      - '127.0.0.1:3002:3000'
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+      - loki
+
 volumes:
   web_node_modules:
   postgres_data:
   s3_data:
+  directus_db_data:
+  directus_uploads:
+  prometheus_data:
+  loki_data:
+  alloy_data:
+  grafana_data:

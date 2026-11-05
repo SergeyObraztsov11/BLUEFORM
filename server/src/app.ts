@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { toNodeHandler } from 'better-auth/node';
 import { errorHandler } from './middleware/error-handler.js';
 import { auth } from './modules/auth/auth.js';
+import { httpDuration, metricsRegistry } from './metrics.js';
 
 extendZodWithOpenApi(z);
 
@@ -21,6 +22,18 @@ export async function createApp() {
   });
 
   app.disable('x-powered-by');
+  app.get('/metrics', async (_request, response, next) => {
+    try {
+      response.set('Content-Type', metricsRegistry.contentType).send(await metricsRegistry.metrics());
+    } catch (error) {
+      next(error);
+    }
+  });
+  app.use((request, response, next) => {
+    const stop = httpDuration.startTimer();
+    response.once('finish', () => stop({ method: request.method, status: String(response.statusCode) }));
+    next();
+  });
   app.get('/openapi.json', (_request, response) => response.json(specification));
   app.get(
     '/docs',
