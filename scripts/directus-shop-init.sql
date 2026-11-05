@@ -6,5 +6,6 @@ SELECT format('ALTER ROLE %I PASSWORD %L', 'blueform_directus_shop', :'directus_
 \gexec
 GRANT CONNECT ON DATABASE blueform TO blueform_directus_shop;
 GRANT USAGE, CREATE ON SCHEMA public TO blueform_directus_shop;
-GRANT SELECT ON TABLE orders, order_items TO blueform_directus_shop;
+GRANT SELECT ON TABLE orders, order_items, categories, fabrics, size_systems, sizes TO blueform_directus_shop;
+GRANT SELECT, INSERT, UPDATE ON TABLE products, product_colorways, skus TO blueform_directus_shop;
 \i /directus-shop-check.sql

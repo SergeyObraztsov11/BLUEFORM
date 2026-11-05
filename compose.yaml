@@ -152,10 +152,20 @@ services:
       - ./scripts/directus-shop-check.sql:/directus-shop-check.sql:ro
     entrypoint: ['/bin/sh', '-ec']
     command:
-      - 'psql -v directus_password="$$DIRECTUS_SHOP_DB_PASSWORD" -f /directus-shop-init.sql'
+      - |
+        for attempt in $$(seq 1 120); do
+          if [ "$$(psql -Atqc "SELECT count(*) FROM _prisma_migrations WHERE migration_name = '20261105130000_directus_catalog' AND finished_at IS NOT NULL AND rolled_back_at IS NULL" 2>/dev/null || true)" = 1 ]; then
+            exec psql -v directus_password="$$DIRECTUS_SHOP_DB_PASSWORD" -f /directus-shop-init.sql
+          fi
+          sleep 2
+        done
+        echo 'Catalog migration did not complete; check the web service logs.' >&2
+        exit 1
     depends_on:
       db:
         condition: service_healthy
+      web:
+        condition: service_started
 
   directus-shop:
     profiles: [admin]

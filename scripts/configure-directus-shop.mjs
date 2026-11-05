@@ -111,3 +111,119 @@ for (const collection of collections) {
   }
 }
 console.log('Directus shop order collections configured for read-only use.');
+
+const productStatusChoices = [
+  { text: 'Черновик', value: 'DRAFT' },
+  { text: 'Опубликован', value: 'PUBLISHED' },
+  { text: 'Архив', value: 'ARCHIVED' },
+];
+const catalogCollections = [
+  {
+    name: 'products',
+    label: 'Товары',
+    icon: 'checkroom',
+    template: '{{name}}',
+    note: 'Сначала создайте товар, затем добавьте его цвет и размеры. Для появления в каталоге опубликуйте товар и цвет.',
+    fields: {
+      name: { label: 'Название' },
+      description: { label: 'Описание', interface: 'input-multiline' },
+      categoryId: { label: 'Категория', relation: true },
+      sizeSystemId: { label: 'Размерная сетка', relation: true },
+      status: { label: 'Публикация', choices: productStatusChoices },
+    },
+  },
+  {
+    name: 'product_colorways',
+    label: 'Цвета товаров',
+    icon: 'palette',
+    template: '{{productId.name}} — {{fabricId.colorName}}',
+    note: 'Для каждого цвета создайте размеры в разделе «Размеры и цены». Цвет должен быть опубликован вместе с товаром.',
+    fields: {
+      productId: { label: 'Товар', relation: true },
+      fabricId: { label: 'Цвет', relation: true },
+      status: { label: 'Публикация', choices: productStatusChoices },
+      modelHeightCm: { label: 'Рост модели, см' },
+      modelWeightKg: { label: 'Вес модели, кг' },
+      modelWornSizeCode: { label: 'Размер на модели' },
+    },
+  },
+  {
+    name: 'skus',
+    label: 'Размеры и цены',
+    icon: 'straighten',
+    template: '{{colorwayId.productId.name}} — {{colorwayId.fabricId.colorName}} — {{sizeId.code}}',
+    note: 'Цены пока вводятся в копейках: например, 7 890 ₽ = 789000 коп. Укажите остаток отдельно для каждого размера.',
+    fields: {
+      colorwayId: { label: 'Товар и цвет', relation: true },
+      sizeId: { label: 'Размер', relation: true },
+      priceKopecks: { label: 'Цена, коп.', note: 'Например, 789000 = 7 890 ₽.' },
+      oldPriceKopecks: {
+        label: 'Цена до скидки, коп.',
+        note: 'Необязательно; должна быть больше текущей цены.',
+      },
+      stockQuantity: { label: 'Остаток, шт.' },
+      isActive: { label: 'Размер доступен' },
+    },
+  },
+  {
+    name: 'categories',
+    label: 'Категории',
+    hidden: true,
+    template: '{{name}} ({{slug}})',
+    fields: { name: { label: 'Категория' }, slug: { label: 'Код категории' } },
+  },
+  {
+    name: 'fabrics',
+    label: 'Цвета',
+    hidden: true,
+    template: '{{colorName}}',
+    fields: { colorName: { label: 'Цвет' } },
+  },
+  {
+    name: 'sizes',
+    label: 'Размеры',
+    hidden: true,
+    template: '{{code}}',
+    fields: { code: { label: 'Размер' } },
+  },
+  {
+    name: 'size_systems',
+    label: 'Размерные сетки',
+    hidden: true,
+    template: '{{name}}',
+    fields: { name: { label: 'Размерная сетка' } },
+  },
+];
+
+for (const collection of catalogCollections) {
+  await request(`/collections/${collection.name}`, {
+    method: 'PATCH',
+    token,
+    body: {
+      meta: {
+        icon: collection.icon || 'folder',
+        note: collection.note || null,
+        hidden: collection.hidden || false,
+        display_template: collection.template,
+        translations: [{ language: 'ru-RU', translation: collection.label }],
+      },
+    },
+  });
+  const fields = (await request(`/fields/${collection.name}`, { token })).data;
+  for (const field of fields) {
+    const config = collection.fields[field.field];
+    const meta = {
+      hidden: !config,
+      readonly: Boolean(collection.hidden || !config),
+      ...(config?.label ? { translations: [{ language: 'ru-RU', translation: config.label }] } : {}),
+      ...(config?.note ? { note: config.note } : {}),
+      ...(config?.relation
+        ? { interface: 'select-dropdown-m2o', special: ['m2o'], options: { enableCreate: false } }
+        : {}),
+      ...(config?.interface ? { interface: config.interface } : {}),
+      ...(config?.choices ? { interface: 'select-dropdown', options: { choices: config.choices } } : {}),
+    };
+    await request(`/fields/${collection.name}/${field.field}`, { method: 'PATCH', token, body: { meta } });
+  }
+}
+console.log('Directus catalog collections configured.');
