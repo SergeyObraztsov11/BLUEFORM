@@ -35,6 +35,8 @@ jobs:
           npm ci --prefix server
       - name: Check formatting, lint and types
         run: npm run verify
+      - name: Check catalog pricing
+        run: node --test directus/extensions/blueform-catalog/tests/pricing.test.ts
       - name: Build applications
         env:
           DATABASE_URL: postgresql://localhost:5432/blueform
